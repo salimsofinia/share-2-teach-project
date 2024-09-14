@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "serve": "node mongodb.js",
+    "dev": "nodemon mongodb.js"
   },
   "author": "Salim Sofinia",
   "license": "ISC",
@@ -11,6 +13,11 @@
   "dependencies": {
     "axios": "^1.7.7",
     "express": "^4.19.2",
+    "mongodb": "^6.8.0",
+    "mongoose": "^8.6.2"
     "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
   }
 }
