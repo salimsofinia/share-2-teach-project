@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const Product = require("./models/product.model.js");
+const Client = require("./models/client.model.js");
 const app = express();
 
 app.use(express.json());
@@ -8,65 +8,65 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("Hello from Node API");
 });
-//single product
-app.get("/api/products", async (req, res) => {
+//all products
+app.get("/api/clients", async (req, res) => {
   try {
-    const products = await Product.find({});
-    res.status(200).json(products);
+    const client = await Client.find({});
+    res.status(200).json(client);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
-//all products
-app.get("/api/product/:id", async (req, res) => {
+//get single product
+app.get("/api/client/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const product = await Product.findById(id);
-    res.status(200).json(product);
+    const client = await Client.findById(id);
+    res.status(200).json(client);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-app.post("/api/products", async (req, res) => {
+app.post("/api/client", async (req, res) => {
   try {
-    const product = await Product.create(req.body);
-    res.status(200).json(product);
+    const client = await Client.create(req.body);
+    res.status(200).json(client);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
 //update a product
-app.put("/api/product/:id", async (req, res) => {
+app.put("/api/client/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const product = await Product.findByIdAndUpdate(id, req.body);
+    const client = await Client.findByIdAndUpdate(id, req.body);
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+    if (!client) {
+      return res.status(404).json({ message: "Client not found" });
     }
 
-    const updatedProduct = await Product.findById(id);
-    res.status(200).json(updatedProduct);
+    const updatedClient = await Client.findById(id);
+    res.status(200).json(updatedClient);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
 //delete a product
-app.delete("/api/product/:id", async (req, res) => {
+app.delete("/api/client/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    const product = await Product.findByIdAndDelete(id);
+    const client = await Client.findByIdAndDelete(id);
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+    if (!client) {
+      return res.status(404).json({ message: "Client not found" });
     }
 
-    res.status(200).json({ message: "Product deleted succesfully" });
+    res.status(200).json({ message: "Client deleted succesfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -74,7 +74,7 @@ app.delete("/api/product/:id", async (req, res) => {
 
 mongoose
   .connect(
-    "mongodb+srv://lohardjvr27:Lohard%401@backenddb.4f0qd.mongodb.net/Node_API?retryWrites=true&w=majority&appName=BackendDB"
+    "mongodb+srv://lohardjvr27:Lohard%401@backenddb.4f0qd.mongodb.net/Share2Teach?retryWrites=true&w=majority&appName=BackendDB"
   )
   .then(() => {
     console.log("Connected to database");
