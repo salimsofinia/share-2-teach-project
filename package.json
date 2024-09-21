@@ -4,8 +4,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "serve": "node mongodb.js",
-    "dev": "nodemon mongodb.js"
+    "serve": "node index.html",
+    "dev": "nodemon index.html"
   },
   "author": "Salim Sofinia",
   "license": "ISC",
