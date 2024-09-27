@@ -5,6 +5,13 @@ const mongoose = require("mongoose");
 //create instance of express
 const app = express();
 
+//cloudinary stuff i dont fully understand yet ~ Lohard
+/*const multer = require("multer");
+const { storage } = require("../cloudinary");
+const upload = multer({ dest: "uploads/" });
+
+const Share2Teach = require("../models/client.model");*/
+
 //Mongodb connection here
 //mongoose.connect('mongodb:urlhere').
 //    catch(error => handleError(error));
