@@ -96,7 +96,8 @@ app.get("/api/faq/:id", async (req, res) => {
 
 mongoose
   .connect(
-    "mongodb+srv://lohardjvr27:Lohard%401@backenddb.4f0qd.mongodb.net/Share2Teach?retryWrites=true&w=majority&appName=BackendDB"
+    //"mongodb+srv://lohardjvr27:Lohard%401@backenddb.4f0qd.mongodb.net/Share2Teach?retryWrites=true&w=majority&appName=BackendDB"
+    "mongodb+srv://salimsofinia:Salim123@backenddb.4f0qd.mongodb.net/Share2Teach?retryWrites=true&w=majority&appName=BackendDB"
   )
   .then(() => {
     console.log("Connected to database");
