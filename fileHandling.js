@@ -3,9 +3,19 @@ const app = express();
 const Cloudinary = require("./cloudinary/index.js");
 
 const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
 
 const path = require("path");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, "/uploads"));
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage });
 
 app.get("/", (req, res) => {
   res.send("Hello world");
@@ -25,15 +35,23 @@ app.get("/api/download/:id", (req, res) => {
   });
 });
 
-app.post("/api/upload", upload.single("file"), (req, res) => {
+app.post("/api/upload", upload.single("fileName"), (req, res) => {
   res.json(req.file);
-  // Upload a file
+
+  // Upload a file path.join(__dirname, req.file)
   Cloudinary.cloudinary.uploader.upload(
-    path.join(__dirname, req.file),
+    path.join(__dirname, "/uploads", req.file.originalname),
+    {
+      resource_type: "image",
+      public_id: req.file.originalname,
+      overwrite: true,
+    },
     function (error, result) {
       if (error) {
         console.error("Upload Error:", error);
       } else {
+        console.log("File Uploaded Successfully!");
+        console.log("");
         console.log("File JSON Response:", result);
       }
     }
