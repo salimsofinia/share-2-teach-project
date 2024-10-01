@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const Client = require("./models/client.model.js");
+const Faq = require("./models/faq.model.js");
 const app = express();
 
 app.use(express.json());
@@ -72,9 +73,31 @@ app.delete("/api/client/:id", async (req, res) => {
   }
 });
 
+//faq's
+//all faq's
+app.get("/api/faqs", async (req, res) => {
+  try {
+    const faq = await Faq.find({});
+    res.status(200).json(faq);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+//display a desired faq
+app.get("/api/faq/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const faq = await Faq.findById(id);
+    res.status(200).json(faq);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 mongoose
   .connect(
-    "mongodb+srv://lohardjvr27:Lohard%401@backenddb.4f0qd.mongodb.net/Share2Teach?retryWrites=true&w=majority&appName=BackendDB"
+    //"mongodb+srv://lohardjvr27:Lohard%401@backenddb.4f0qd.mongodb.net/Share2Teach?retryWrites=true&w=majority&appName=BackendDB"
+    "mongodb+srv://salimsofinia:Salim123@backenddb.4f0qd.mongodb.net/Share2Teach?retryWrites=true&w=majority&appName=BackendDB"
   )
   .then(() => {
     console.log("Connected to database");

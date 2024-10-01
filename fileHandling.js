@@ -1,51 +1,65 @@
-//Import axios
-const axios = require("axios");
+const express = require("express");
+const app = express();
+const Cloudinary = require("./cloudinary/index.js");
 
-//Function to download a file using Axios
-function downloadFile(url, filename) {
-  axios({
-    //URL of file to download
-    url: url,
-    method: "GET",
-    //Handle the response as binary data (Blob)
-    responseType: "blob",
-  })
-    .then((response) => {
-      //Create a Blob URL from the response data
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      //Create an <a> element for download
-      const a = document.createElement("a");
-      a.href = url;
-      //Set the file name for the download
-      a.download = filename;
-      //Make the element invisible
-      a.style.display = "none";
+const multer = require("multer");
 
-      //Append to the document
-      document.body.appendChild(a);
-      //Trigger click which starts download
-      a.click();
-      //Remove the element
-      document.body.removeChild(a);
-      //Clean up memory
-      window.URL.revokeObjectURL(url);
-    })
-    .catch((error) => {
-      //Catch error
-      console.error("Error downloading the file:", error);
-    });
-}
+const path = require("path");
 
-// Call the function to download the file
-downloadFile("https://example.com/file.pdf", "downloaded-file.pdf");
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, "/uploads"));
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
 
-//Let user choose file
-var input = document.createElement("input");
-//Set input type to file
-input.type = "file";
-//Put chosen file into file variable (file.name, file.size, file.type)
-input.onchange = (e) => {
-  var file = e.target.files[0];
-};
+const upload = multer({ storage });
 
-input.click();
+app.get("/", (req, res) => {
+  res.send("Hello world");
+});
+
+app.get("/api/download/:id", (req, res) => {
+  // Get details for a file with public_id
+  const { id } = req.params;
+  Cloudinary.cloudinary.api.resource(id, function (error, result) {
+    if (error) {
+      console.error("Error retrieving file:", error);
+    } else {
+      //get file url used to download file
+      res.send(result.secure_url);
+      console.log("File URL:", result.secure_url);
+    }
+  });
+});
+
+app.post("/api/upload", upload.single("fileName"), (req, res) => {
+  res.json(req.file);
+
+  // Upload a file path.join(__dirname, req.file)
+  Cloudinary.cloudinary.uploader.upload(
+    path.join(__dirname, "/uploads", req.file.originalname),
+    {
+      resource_type: "image",
+      public_id: req.file.originalname,
+      overwrite: true,
+    },
+    function (error, result) {
+      if (error) {
+        console.error("Upload Error:", error);
+      } else {
+        console.log("File Uploaded Successfully!");
+        console.log("");
+        console.log("File JSON Response:", result);
+      }
+    }
+  );
+});
+
+const port = process.env.PORT || 3000;
+
+app.listen(port, () => {
+  console.log("listening on port " + port);
+});
