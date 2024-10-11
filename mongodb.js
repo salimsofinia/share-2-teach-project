@@ -136,13 +136,31 @@ app.delete("/api/file/:id", async (req, res) => {
   try {
     //const file = await File.findByIdAndDelete(id);
     const { id } = req.params;
-    var fileRemoved = 0;
-    console.log(id);
     File.findByIdAndDelete(id)
       .then((deletedFile) => {
         if (deletedFile) {
-          console.log("File deleted:", deletedFile);
-          fileRemoved = deletedFile;
+          console.log("File deleted from db:", deletedFile);
+          Cloudinary.cloudinary.uploader.destroy(
+            deletedFile.fileName,
+            function (error, result) {
+              if (error) {
+                console.error("Error deleting file:", error);
+                res.status(404).json({
+                  success: false,
+                  message:
+                    "File with id " + deletedFile.fileName + " not found",
+                });
+              } else {
+                //send message that file is successfully deleted
+                res.status(200).json({
+                  success: true,
+                  message: "File with id " + id + " successfully deleted: ",
+                });
+              }
+
+              console.log("File Deleted from Cloudinary:", result);
+            }
+          );
         } else {
           console.log("File not found");
           //res.status(404).json({ message: "File not found" });
@@ -152,126 +170,10 @@ app.delete("/api/file/:id", async (req, res) => {
         console.error("Error deleting file:", err);
         //res.status(404).json({ message: "File not found" });
       });
-
-    //const file = File.findByIdAndDelete(id);
-    // const fileName = file.fileName;
-    // console.log(file.fileName);
-    /*if (!file) {
-      return res.status(404).json({ message: "File not found" });
-    }*/
-
-    //search if file exists on cloudinary
-    Cloudinary.cloudinary.api.resource(
-      fileRemoved.fileName,
-      function (error, result) {
-        if (error) {
-          console.log("Error: " + error.message);
-          res.status(404).json({
-            success: false,
-            message: "File with id " + fileRemoved.fileName + " not found",
-          });
-        } else {
-          //if file exists then delete
-          Cloudinary.cloudinary.uploader.destroy(
-            fileRemoved.fileName,
-            function (error, result) {
-              if (error) {
-                console.error("Error deleting file:", error);
-                res.status(404).json({
-                  success: false,
-                  message: "File with id " + fileName + " not found",
-                });
-              } else {
-                //send message that file is successfully deleted
-
-                console.log(id);
-                //const fileDelete = File.findByIdAndDelete(id);
-                console.log(file);
-
-                if (!fileDelete) {
-                  return res.status(404).json({ message: "File not found" });
-                }
-
-                res.status(200).json({
-                  success: true,
-                  message: "File with id " + id + " successfully deleted",
-                });
-              }
-
-              console.log("File Deleted:", id);
-            }
-          );
-        }
-      }
-    );
-    /*
-    res.status(200).json({ message: "File deleted succesfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }*/
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
-/* 
-      //search if file exists on cloudinary
-  Cloudinary.cloudinary.api.resource(id, function (error, result) {
-    if (error) {
-      console.log("Error: " + error.message);
-      res.status(404).json({
-        success: false,
-        message: "File with id " + id + " not found",
-      });
-    } else {
-      //if file exists then delete
-      Cloudinary.cloudinary.uploader.destroy(id, function (error, result) {
-        if (error) {
-          console.error("Error deleting file:", error);
-          res.status(404).json({
-            success: false,
-            message: "File with id " + id + " not found",
-          });
-        } else {
-          //send message that file is successfully deleted
-
-          //const file = await File.findByIdAndDelete(id);
-
-          if (!file) {
-            return res.status(404).json({ message: "File not found" });
-          }
-      
-          res.status(200).json({ message: "File deleted succesfully" });
-        } catch (error) {
-          res.status(500).json({ message: error.message });
-        }
-      
-    
-  
-
-          res.status(200).json({
-            success: true,
-            message: "File with id " + id + " successfully deleted",
-          });
-          console.log("File Deleted:", id);
-        });
-      };
-      });
-    
-    }
-  });*/
-
-/*
-    const file = await File.findByIdAndDelete(id);
-
-    if (!file) {
-      return res.status(404).json({ message: "File not found" });
-    }
-
-    res.status(200).json({ message: "File deleted succesfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});*/
 
 app.post("/api/file", upload.single("file"), async (req, res) => {
   const filePath = path.join(__dirname, "/uploads", req.file.originalname);
@@ -289,14 +191,6 @@ app.post("/api/file", upload.single("file"), async (req, res) => {
       console.log(result.secure_url);
       const uploadedUrl = result.secure_url;
 
-      /*const fileUploadJSON = new File({
-        fileName: req.file.originalname,
-        fileUrl: uploadedUrl,
-        Validation: false,
-      });*/
-
-      //console.log(fileUploadJSON);
-
       if (error) {
         console.error("Upload Error:", error);
       } else {
@@ -308,38 +202,13 @@ app.post("/api/file", upload.single("file"), async (req, res) => {
           });
           newFile
             .save()
-            .then((file) => console.log("User created:", file))
-            .catch((err) => console.error("Error creating user:", err));
-          /*File.create({
-            fileName: req.file.originalname,
-            fileUrl: uploadedUrl,
-            Validation: false,
-          });*/
+            .then((file) => console.log("File created:", file))
+            .catch((err) => console.error("Error creating file:", err));
           res.status(200).json(newFile);
         } catch (error) {
           res.status(500).json({ message: error.message });
         }
 
-        //console.log("File JSON Response:", result);
-        /*
-        Cloudinary.cloudinary.api.resource(
-          req.file.originalname,
-          function (error, result) {
-            if (error) {
-              console.error("Error retrieving file:", error);
-            } else {
-              try {
-                const file = File.create(result.secure_url);
-                res.status(200).json(file);
-              } catch (error) {
-                res.status(500).json({ message: error.message });
-              }
-
-              //res.send(result.secure_url);
-              console.log("File URL:", result.secure_url);
-            }
-          }
-        );*/
         //remove file that is stored locally
         fs.unlink(filePath, (error) => {
           if (error) {
@@ -349,13 +218,6 @@ app.post("/api/file", upload.single("file"), async (req, res) => {
       }
     }
   );
-  /*
-  try {
-    const file = await File.create(req.body);
-    res.status(200).json(file);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }*/
 });
 
 mongoose

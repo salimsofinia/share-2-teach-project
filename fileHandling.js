@@ -46,7 +46,7 @@ app.delete("/api/delete/:id", (req, res) => {
       console.log("Error: " + error.message);
       res.status(404).json({
         success: false,
-        message: "File with id " + id + " not found",
+        message: "File with id " + id + " not foundsearc",
       });
     } else {
       //if file exists then delete
@@ -100,7 +100,7 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
             } else {
               try {
                 const file = File.create(result.secure_url);
-                res.status(200).json(client);
+                res.status(200).json(file);
               } catch (error) {
                 res.status(500).json({ message: error.message });
               }
