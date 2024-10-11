@@ -113,7 +113,7 @@ app.get("/api/faq/:id", async (req, res) => {
 
 //files
 //
-app.get("/api/files", async (req, res) => {
+app.get("/api/file", async (req, res) => {
   try {
     const file = await File.find({});
     res.status(200).json(file);
@@ -127,6 +127,48 @@ app.get("/api/file/:id", async (req, res) => {
     const { id } = req.params;
     const file = await File.findById(id);
     res.status(200).json(file);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//Search for files containing text in their file name
+app.get("/api/file/search/:query", async (req, res) => {
+  const { query } = req.params;
+
+  try {
+    const files = await File.find({
+      fileName: { $regex: query, $options: "i" }, //"i indicates case insensitive"
+    });
+    res.status(200).json(files);
+  } catch (error) {
+    console.error("Error retrieving files:", error);
+    res.status(500).json({ message: "Error retrieving files", error });
+  }
+});
+
+//admin will update validation to true after approving file or false when unapproving file
+//if true will get set to false, if false will get set to true
+app.put("/api/file/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const fileUpdate = await File.findById(id);
+    const valUpdate = !fileUpdate.Validation;
+
+    const file = await File.findByIdAndUpdate(
+      id,
+      { Validation: valUpdate },
+      { new: true, runValidators: true }
+    ).then((updatedFile) => {
+      if (!updatedFile) {
+        console.log(error.message);
+        res.status(404).json({ message: "Resource not found" });
+      } else {
+        console.log("File validated: ", updatedFile);
+        res.status(200).json(updatedFile);
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -200,6 +242,9 @@ app.post("/api/file", upload.single("file"), async (req, res) => {
             fileName: req.file.originalname,
             fileUrl: uploadedUrl,
             Validation: false,
+            fileSize: req.file.size,
+            fileType: req.file.mimetype,
+            //perhaps add user whou uploaded with JWT
           });
           newFile
             .save()

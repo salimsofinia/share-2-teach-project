@@ -14,8 +14,22 @@ const FileSchema = mongoose.Schema(
 
     Validation: {
       type: Boolean,
-      required: false,
+      required: true,
       default: false,
+    },
+    //metadata follows
+    fileSize: {
+      type: Number,
+      required: false,
+    },
+    fileType: {
+      type: String,
+      required: false,
+    },
+    //JWT perchance
+    uploadUser: {
+      type: String,
+      required: false,
     },
   },
   {
