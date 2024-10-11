@@ -11,7 +11,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary,
   folder: "Share2Teach",
-  allowedFormats: ["jpeg", "png", "jpg"],
+  //allowedFormats: ["jpeg", "png", "jpg"],
 });
 
 module.exports = {

@@ -142,6 +142,7 @@ app.delete("/api/file/:id", async (req, res) => {
           console.log("File deleted from db:", deletedFile);
           Cloudinary.cloudinary.uploader.destroy(
             deletedFile.fileName,
+            { resource_type: "raw" },
             function (error, result) {
               if (error) {
                 console.error("Error deleting file:", error);
@@ -181,7 +182,7 @@ app.post("/api/file", upload.single("file"), async (req, res) => {
   Cloudinary.cloudinary.uploader.upload(
     filePath,
     {
-      resource_type: "image",
+      resource_type: "raw",
       public_id: req.file.originalname,
       overwrite: true,
     },
