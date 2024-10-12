@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script src="document_upload.js"></script>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -14,6 +15,7 @@
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle">Explore</a>
                     <ul class="dropdown-menu">
+                        <li><button onclick="openPopup()">Log in</button></li>
                         <li><a href="account creation.html">Account creation</a></li>
                         <li><a href="password reset.html">Password Reset</a></li>
                         <li><a href="subject view.html">Subject View </a></li>
@@ -32,6 +34,16 @@
             </ul>
         </nav>
     </header>
+    <div class="popup" id="popup">
+        <div class="popup-content">
+          <label>E-Mail:</label>
+          <input type="text" id="loginE-mail"><br><br>
+          <label>Password:</label>
+          <input type="text" id="loginPassword"><br><br>
+          <button onclick="Login()">Log in</button>
+          <button onclick="closePopup()">Close</button>
+        </div>
+      </div>
     <section>
         <a href="About us.html" class="logo"><img src="s2t.png" alt="Share 2 Teach Logo" width="10%" align="centre"></a>
         <h1>Welcome to Share 2 Teach</h1>

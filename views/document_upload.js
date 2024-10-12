@@ -9,6 +9,16 @@ fileInput.addEventListener('change', (e) => {
     documentName.innerText = file.name;
 });
 
+// Function to open popup
+function openPopup() {
+    document.getElementById('popup').style.display = 'block';
+  }
+  
+  // Function to close popup
+  function closePopup() {
+    document.getElementById('popup').style.display = 'none';
+  }
+  
 // Save file on button click
 saveBtn.addEventListener('click', () => {
     const file = fileInput.files[0];
