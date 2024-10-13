@@ -1,5 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+const cookieParse = require("cookie-parser");
 const Client = require("./models/client.model.js");
 const Faq = require("./models/faq.model.js");
 const File = require("./models/file.model.js");
@@ -7,6 +9,29 @@ const Cloudinary = require("./cloudinary/index.js");
 const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
+const { Console, error } = require("console");
+const cookieParser = require("cookie-parser");
+require("dotenv").config();
+
+// JWT Authentication Middleware
+function authenticateJWT(req, res, next) {
+  const tokenReq = req.cookies.accessToken;
+  //console.log(tokenReq);
+  if (tokenReq) {
+    //console.log(token);
+
+    jwt.verify(tokenReq, process.env.JWT_SECRET, (err, user) => {
+      if (err) {
+        return res.status(403).json({ message: "Invalid token" });
+      }
+
+      req.user = user; // Attach user info to request
+      next();
+    });
+  } else {
+    return res.status(401).json({ message: "Authorization header missing" });
+  }
+}
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -21,13 +46,38 @@ const upload = multer({ storage });
 
 const app = express();
 
+app.use(cookieParser());
 app.use(express.json());
+
+// Example login route to issue JWT tokens
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
+
+  // Replace with real user validation logic
+  const user = { id: 1, username: "test_user" };
+
+  if (username === "test_user" && password === "password123") {
+    const accessToken = jwt.sign(user, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    // Set the token in an HttpOnly cookie
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true, // Prevent access via JavaScript
+      secure: true, // Only send over HTTPS
+      sameSite: "strict", // Helps prevent CSRF attacks
+      maxAge: 3600000, // Cookie expiry time (in milliseconds) (1 hour)
+    });
+    res.json({ accessToken });
+  } else {
+    res.status(401).json({ message: "Invalid credentials" });
+  }
+});
 
 app.get("/", (req, res) => {
   res.send("Hello from Node API");
 });
 //all products
-app.get("/api/clients", async (req, res) => {
+app.get("/api/clients", authenticateJWT, async (req, res) => {
   try {
     const client = await Client.find({});
     res.status(200).json(client);
@@ -36,7 +86,7 @@ app.get("/api/clients", async (req, res) => {
   }
 });
 //get single product
-app.get("/api/client/:id", async (req, res) => {
+app.get("/api/client/:id", authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
     const client = await Client.findById(id);
@@ -46,7 +96,7 @@ app.get("/api/client/:id", async (req, res) => {
   }
 });
 
-app.post("/api/client", async (req, res) => {
+app.post("/api/client", authenticateJWT, async (req, res) => {
   try {
     const client = await Client.create(req.body);
     res.status(200).json(client);
@@ -56,7 +106,7 @@ app.post("/api/client", async (req, res) => {
 });
 
 //update a product
-app.put("/api/client/:id", async (req, res) => {
+app.put("/api/client/:id", authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -74,7 +124,7 @@ app.put("/api/client/:id", async (req, res) => {
 });
 
 //delete a product
-app.delete("/api/client/:id", async (req, res) => {
+app.delete("/api/client/:id", authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -92,7 +142,7 @@ app.delete("/api/client/:id", async (req, res) => {
 
 //faq's
 //all faq's
-app.get("/api/faqs", async (req, res) => {
+app.get("/api/faqs", authenticateJWT, async (req, res) => {
   try {
     const faq = await Faq.find({});
     res.status(200).json(faq);
@@ -101,7 +151,7 @@ app.get("/api/faqs", async (req, res) => {
   }
 });
 //display a desired faq
-app.get("/api/faq/:id", async (req, res) => {
+app.get("/api/faq/:id", authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
     const faq = await Faq.findById(id);
@@ -113,7 +163,7 @@ app.get("/api/faq/:id", async (req, res) => {
 
 //files
 //
-app.get("/api/file", async (req, res) => {
+app.get("/api/file", authenticateJWT, async (req, res) => {
   try {
     const file = await File.find({});
     res.status(200).json(file);
@@ -122,7 +172,7 @@ app.get("/api/file", async (req, res) => {
   }
 });
 
-app.get("/api/file/:id", async (req, res) => {
+app.get("/api/file/:id", authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
     const file = await File.findById(id);
@@ -132,8 +182,105 @@ app.get("/api/file/:id", async (req, res) => {
   }
 });
 
+//function to calculate average rating score
+function calcAvgRating(ratings) {
+  if (ratings.length === 0) {
+    return 0;
+  }
+  //accumalative, current
+  const total = ratings.reduce((acc, cur) => acc + cur.rating, 0);
+  return (total / ratings.length).toFixed(2);
+}
+
+//Rating files, user can only rate a specific file once
+app.post("/api/file/rate/:id", authenticateJWT, async (req, res) => {
+  const { id } = req.params;
+  const { rating } = req.body;
+
+  try {
+    const file = await File.findById(id);
+    // Ensure the rating is valid
+    if (!rating || rating < 1 || rating > 5) {
+      return res
+        .status(400)
+        .json({ message: "Rating must be between 1 and 5." });
+    }
+    const tokenReq = req.cookies.accessToken;
+    jwt.verify(tokenReq, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        console.error("Token verification failed:", err.message);
+        res.status(500).json({ message: error.message });
+      } else {
+        // Extracted data from the token
+        //console.log("Decoded Token Data:", decoded);
+        // Access payload fields
+        console.log("id:", decoded.id);
+        userID = decoded.id;
+
+        //const file = File.findById(id);
+        if (!file) {
+          console.log("File not found");
+          return res.status(404).json({ message: "File not found" });
+        }
+        console.log(id);
+        if (!file.ratings || !Array.isArray(file.ratings)) {
+          console.log("No ratings found for this file.");
+          file.ratings = [];
+          file.ratings.push({ userID, rating });
+
+          file.save();
+          // return res.status(200).json(file);
+          return res.status(200).json({
+            message: "Rating added successfully",
+            fileName: file.fileName,
+            fileUrl: file.fileUrl,
+            Validation: file.Validation,
+            ratings: file.ratings,
+            averageRatings: calcAvgRating(file.ratings),
+          });
+        }
+
+        const ratingExists = file.ratings.find(
+          (r) => console.log(r.userId) //r.userId.toString() === userID
+        );
+
+        if (ratingExists) {
+          return res
+            .status(400)
+            .json({ message: "User has already rated this file" });
+        }
+
+        file.ratings.push({ userID, rating });
+
+        file.save();
+
+        res.status(200).json({
+          message: "Rating added successfully",
+          fileName: file.fileName,
+          fileUrl: file.fileUrl,
+          Validation: file.Validation,
+          ratings: file.ratings,
+          averageRatings: calcAvgRating(file.ratings),
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//get files that are not validated
+app.get("/api/file/validate", authenticateJWT, async (req, res) => {
+  try {
+    const files = await File.find({ Validation: false });
+    res.status(200).json({ files });
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving files: ", error });
+  }
+});
+
 //Search for files containing text in their file name
-app.get("/api/file/search/:query", async (req, res) => {
+app.get("/api/file/search/:query", authenticateJWT, async (req, res) => {
   const { query } = req.params;
 
   try {
@@ -149,7 +296,7 @@ app.get("/api/file/search/:query", async (req, res) => {
 
 //admin will update validation to true after approving file or false when unapproving file
 //if true will get set to false, if false will get set to true
-app.put("/api/file/:id", async (req, res) => {
+app.put("/api/file/:id", authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -173,8 +320,24 @@ app.put("/api/file/:id", async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+/*
+app.delete("/api/file", authenticateJWT, async (req, res) => {
+  try {
+    //const { id } = req.params;
 
-app.delete("/api/file/:id", async (req, res) => {
+    const file = await File.deleteMany({});
+
+    if (!file) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    res.status(200).json({ message: "Files deleted succesfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});*/
+
+app.delete("/api/file/:id", authenticateJWT, async (req, res) => {
   try {
     //const file = await File.findByIdAndDelete(id);
     const { id } = req.params;
@@ -206,7 +369,7 @@ app.delete("/api/file/:id", async (req, res) => {
           );
         } else {
           console.log("File not found");
-          //res.status(404).json({ message: "File not found" });
+          res.status(404).json({ message: "File not found" });
         }
       })
       .catch((err) => {
@@ -218,53 +381,97 @@ app.delete("/api/file/:id", async (req, res) => {
   }
 });
 
-app.post("/api/file", upload.single("file"), async (req, res) => {
-  const filePath = path.join(__dirname, "/uploads", req.file.originalname);
-  // Upload a file path.join(__dirname, req.file)
-  Cloudinary.cloudinary.uploader.upload(
-    filePath,
-    {
-      resource_type: "raw",
-      public_id: req.file.originalname,
-      overwrite: true,
-    },
-    function (error, result) {
-      console.log("File Uploaded Successfully!");
-      console.log("");
-      console.log(result.secure_url);
-      const uploadedUrl = result.secure_url;
-
-      if (error) {
-        console.error("Upload Error:", error);
+app.post(
+  "/api/file",
+  authenticateJWT,
+  upload.single("file"),
+  async (req, res) => {
+    const filePath = path.join(__dirname, "/uploads", req.file.originalname);
+    //verify JWT token to gain access to user thats logged in
+    const tokenReq = req.cookies.accessToken;
+    var userUpload = "";
+    jwt.verify(tokenReq, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        console.error("Token verification failed:", err.message);
       } else {
-        try {
-          const newFile = new File({
-            fileName: req.file.originalname,
-            fileUrl: uploadedUrl,
-            Validation: false,
-            fileSize: req.file.size,
-            fileType: req.file.mimetype,
-            //perhaps add user whou uploaded with JWT
-          });
-          newFile
-            .save()
-            .then((file) => console.log("File created:", file))
-            .catch((err) => console.error("Error creating file:", err));
-          res.status(200).json(newFile);
-        } catch (error) {
-          res.status(500).json({ message: error.message });
-        }
-
-        //remove file that is stored locally
-        fs.unlink(filePath, (error) => {
-          if (error) {
-            console.log(error.message);
-          }
-        });
+        // Extracted data from the token
+        console.log("Decoded Token Data:", decoded);
+        // Access payload fields
+        console.log("Username:", decoded.username);
+        userUpload = decoded.username;
       }
-    }
-  );
-});
+    });
+    console.log(req.file.originalname);
+    const resource = Cloudinary.cloudinary.api.resource(
+      req.file.originalname,
+      { resource_type: "raw" },
+      function (error, result) {
+        if (error) {
+          console.log("File not exists:", error);
+          // Upload a file path.join(__dirname, req.file)
+          Cloudinary.cloudinary.uploader.upload(
+            filePath,
+            {
+              resource_type: "raw",
+              public_id: req.file.originalname,
+              overwrite: true,
+            },
+            function (error, result) {
+              console.log("File Uploaded Successfully!");
+              console.log(filePath);
+              console.log(req.originalname);
+              console.log(result);
+              console.log(result.secure_url);
+              const uploadedUrl = result.secure_url;
+
+              if (error) {
+                console.error("Upload Error:", error);
+              } else {
+                try {
+                  const newFile = new File({
+                    fileName: req.file.originalname,
+                    fileUrl: uploadedUrl,
+                    Validation: false,
+                    fileSize: req.file.size,
+                    fileType: req.file.mimetype,
+                    uploadUser: userUpload,
+                  });
+                  newFile
+                    .save()
+                    .then((file) => console.log("File created:", file))
+                    .catch((err) => console.error("Error creating file:", err));
+                  res.status(200).json(newFile);
+                } catch (error) {
+                  res.status(500).json({ message: error.message });
+                }
+
+                //remove file that is stored locally
+                fs.unlink(filePath, (error) => {
+                  if (error) {
+                    console.log(error.message);
+                  }
+                });
+              }
+            }
+          );
+        } else {
+          console.log("File already exists: ", result);
+          res.status(40).json({
+            message: "File already exists, rename the file and try again: ",
+            result,
+          });
+        }
+      }
+    );
+    /*
+    //remove file that is stored locally
+    fs.unlink(filePath, (error) => {
+      if (error) {
+        console.log(error.message);
+      }
+    });*/
+  }
+);
 
 mongoose
   .connect(
