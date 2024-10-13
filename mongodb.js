@@ -11,11 +11,17 @@ const multer = require("multer");
 const path = require("path");
 const { Console, error } = require("console");
 const cookieParser = require("cookie-parser");
+const { collection } = require("./models/user.js");
 require("dotenv").config();
 
 // JWT Authentication Middleware
 function authenticateJWT(req, res, next) {
   const tokenReq = req.cookies.accessToken;
+  if (tokenReq === undefined) {
+    return res
+      .status(403)
+      .json({ message: "Token has expired please log in again" });
+  }
   //console.log(tokenReq);
   if (tokenReq) {
     //console.log(token);
@@ -48,7 +54,7 @@ const app = express();
 
 app.use(cookieParser());
 app.use(express.json());
-
+/*
 // Example login route to issue JWT tokens
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
@@ -71,7 +77,7 @@ app.post("/api/login", (req, res) => {
   } else {
     res.status(401).json({ message: "Invalid credentials" });
   }
-});
+});*/
 
 app.get("/", (req, res) => {
   res.send("Hello from Node API");
@@ -99,6 +105,7 @@ app.get("/api/client/:id", authenticateJWT, async (req, res) => {
 app.post("/api/client", authenticateJWT, async (req, res) => {
   try {
     const client = await Client.create(req.body);
+
     res.status(200).json(client);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -166,6 +173,7 @@ app.get("/api/faq/:id", authenticateJWT, async (req, res) => {
 app.get("/api/file", authenticateJWT, async (req, res) => {
   try {
     const file = await File.find({});
+    console.log(req.user);
     res.status(200).json(file);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -199,70 +207,61 @@ app.post("/api/file/rate/:id", authenticateJWT, async (req, res) => {
 
   try {
     const file = await File.findById(id);
+
     // Ensure the rating is valid
     if (!rating || rating < 1 || rating > 5) {
       return res
         .status(400)
         .json({ message: "Rating must be between 1 and 5." });
     }
-    const tokenReq = req.cookies.accessToken;
-    jwt.verify(tokenReq, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) {
-        console.error("Token verification failed:", err.message);
-        res.status(500).json({ message: error.message });
-      } else {
-        // Extracted data from the token
-        //console.log("Decoded Token Data:", decoded);
-        // Access payload fields
-        console.log("id:", decoded.id);
-        userID = decoded.id;
 
-        //const file = File.findById(id);
-        if (!file) {
-          console.log("File not found");
-          return res.status(404).json({ message: "File not found" });
-        }
-        console.log(id);
-        if (!file.ratings || !Array.isArray(file.ratings)) {
-          console.log("No ratings found for this file.");
-          file.ratings = [];
-          file.ratings.push({ userID, rating });
+    userEmail = req.user.email;
+    console.log("userEmail: ", userEmail);
+    // const file = File.findById(id);
+    if (!file) {
+      console.log("File not found");
+      return res.status(404).json({ message: "File not found" });
+    }
+    console.log(id);
+    if (!file.ratings || !Array.isArray(file.ratings)) {
+      console.log("No ratings found for this file.");
+      file.ratings = [];
+      file.ratings.push({ userEmail, rating });
 
-          file.save();
-          // return res.status(200).json(file);
-          return res.status(200).json({
-            message: "Rating added successfully",
-            fileName: file.fileName,
-            fileUrl: file.fileUrl,
-            Validation: file.Validation,
-            ratings: file.ratings,
-            averageRatings: calcAvgRating(file.ratings),
-          });
-        }
+      file.save();
+      // return res.status(200).json(file);
+      return res.status(200).json({
+        message: "Rating added successfully",
+        fileName: file.fileName,
+        fileUrl: file.fileUrl,
+        Validation: file.Validation,
+        ratings: file.ratings,
+        averageRatings: calcAvgRating(file.ratings),
+      });
+    }
+    const ratingExists = await File.find({
+      fileName: file.fileName,
+      "ratings.userEmail": userEmail,
+    });
+    console.log(ratingExists);
 
-        const ratingExists = file.ratings.find(
-          (r) => console.log(r.userId) //r.userId.toString() === userID
-        );
+    if (ratingExists.length != 0) {
+      return res
+        .status(400)
+        .json({ message: "User has already rated this file" });
+    }
 
-        if (ratingExists) {
-          return res
-            .status(400)
-            .json({ message: "User has already rated this file" });
-        }
+    file.ratings.push({ userEmail, rating });
 
-        file.ratings.push({ userID, rating });
+    file.save();
 
-        file.save();
-
-        res.status(200).json({
-          message: "Rating added successfully",
-          fileName: file.fileName,
-          fileUrl: file.fileUrl,
-          Validation: file.Validation,
-          ratings: file.ratings,
-          averageRatings: calcAvgRating(file.ratings),
-        });
-      }
+    res.status(200).json({
+      message: "Rating added successfully",
+      fileName: file.fileName,
+      fileUrl: file.fileUrl,
+      Validation: file.Validation,
+      ratings: file.ratings,
+      averageRatings: calcAvgRating(file.ratings),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -397,8 +396,8 @@ app.post(
         // Extracted data from the token
         console.log("Decoded Token Data:", decoded);
         // Access payload fields
-        console.log("Username:", decoded.username);
-        userUpload = decoded.username;
+        console.log("Username:", decoded.email);
+        userUpload = decoded.email;
       }
     });
     console.log(req.file.originalname);
@@ -480,8 +479,8 @@ mongoose
   )
   .then(() => {
     console.log("Connected to database");
-    app.listen(3000, () => {
-      console.log("Server is running on port 3000");
+    app.listen(4000, () => {
+      console.log("Server is running on port 4000");
     });
   })
   .catch(() => {
