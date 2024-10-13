@@ -153,6 +153,9 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const bcrypt = require("bcrypt");
 const User = require("./models/user");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+require("dotenv").config();
 
 const app = express();
 app.set("view engine", "ejs");
@@ -181,29 +184,107 @@ app.use(
     saveUninitialized: true,
   })
 );
+app.use(express.json());
+app.use(cookieParser());
 
-const requireLogin = (req, res, next) => {
-  if (!req.session.user_id) {
+/*const*/ function requireLogin(req, res, next) {
+  const accessToken = req.cookies.accessToken;
+  if (accessToken === undefined) {
+    return res.redirect("/login");
+    //return res.status(403).json({ message: "Token has expired" });
+  }
+  if (accessToken) {
+    jwt.verify(accessToken, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        console.error("Token verification failed:", err.message);
+      } else {
+        // Extracted data from the token
+        //console.log("User:", decoded);
+        // Access payload fields
+        //console.log("ID:", decoded.id);
+        const tokenID = decoded.id;
+        const user = User.findById(tokenID);
+        if (!user) {
+          return res.redirect("/login");
+        }
+        req.user = decoded;
+        next();
+      }
+    });
+  }
+
+  /*if (!req.session.user_id) {
     return res.redirect("/login");
   }
-  next();
-};
+  next();*/
+}
 
-app.get("/faq", (req, res) => {
+app.get("/users", async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.json(users);
+  } catch (error) {
+    res.json(error.message);
+  }
+});
+
+app.get("/faq", requireLogin, (req, res) => {
   res.render("faq");
 });
 
 app.get("/registerrole", requireLogin, async (req, res) => {
-  const user = await User.findById(req.session.user_id);
-  if (user && user.credential === "Admin") {
+  console.log(req.user.credential);
+  //const user = User.findById(req.user.id);
+  //console.log(user.email);
+  if (req.user && req.user.credential === "Admin") {
     res.render("registerrole");
   } else {
     res.redirect("/");
   }
+
+  //const user = await User.findById(req.session.user_id);
+  /*if (user && user.credential === "Admin") {
+    res.render("registerrole");
+  } else {
+    res.redirect("/");
+  }*/
 });
 
+//What is role text box?
+/*
+app.post("/registerrole", requireLogin, async (req, res) => {
+  try {
+    if (req.user && req.user.credential === "Admin") {
+      const {
+        firstname,
+        lastname,
+        email,
+        affiliation,
+        credential,
+        password,
+        role,
+      } = req.body;
+      const user = new User({
+        firstname,
+        lastname,
+        email,
+        affiliation,
+        credential,
+        password,
+        role,
+      });
+      await user.save();
+      res.redirect("/login");
+    } else {
+      res.redirect("/");
+    }
+  } catch (error) {
+    console.log(error.message);
+  }
+});*/
+
 app.get("/login", (req, res) => {
-  if (req.session.user_id) {
+  if (req.cookies.accessToken) {
     res.redirect("/"); // Redirect to home if already logged in
   } else {
     res.render("login");
@@ -211,17 +292,19 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  if (req.session.user_id) {
+  if (req.cookies.accessToken) {
     res.redirect("/"); // Redirect to home if already logged in
   } else {
     res.render("register");
   }
 });
 
-app.get("/", async (req, res) => {
+app.get("/", requireLogin, async (req, res) => {
   let user = null;
-  if (req.session.user_id) {
-    user = await User.findById(req.session.user_id);
+  console.log(req.user.id);
+  const userID = req.user.id;
+  if (req.user) {
+    user = await User.findById(userID);
   }
   res.render("home", { user: user });
 });
@@ -230,8 +313,40 @@ app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   const foundUser = await User.findAndValidate(email, password);
   if (foundUser) {
-    req.session.user_id = foundUser._id;
+    const user = {
+      id: foundUser._id,
+      email: foundUser.email,
+      credential: foundUser.credential,
+    };
+
+    const accessToken = jwt.sign(user, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    // Set the token in an HttpOnly cookie
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true, // Prevent access via JavaScript
+      secure: true, // Only send over HTTPS
+      sameSite: "strict", // Helps prevent CSRF attacks
+      maxAge: 3600000, // Cookie expiry time (in milliseconds) (1 hour)
+    });
+
+    jwt.verify(accessToken, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        console.error("Token verification failed:", err.message);
+      } else {
+        // Extracted data from the token
+        //console.log("Decoded Token Data:", decoded);
+        // Access payload fields
+        console.log("Username:", decoded.email);
+        //userUpload = decoded.username;
+      }
+    });
+    //res.json({ accessToken });
+    console.log();
     res.redirect("/");
+
+    //req.session.user_id = foundUser._id;
+    //res.redirect("/");
   } else {
     res.redirect("/login");
   }
@@ -253,9 +368,15 @@ app.post("/register", async (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/login");
+  Object.keys(req.cookies).forEach((cookieName) => {
+    res.clearCookie(cookieName);
   });
+  console.log("All cookies destroyed");
+
+  /* req.session.destroy(() => {
+    res.redirect("/login");
+  });*/
+  res.redirect("/login");
 });
 
 app.listen(3000, () => {

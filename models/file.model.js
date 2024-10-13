@@ -33,9 +33,9 @@ const FileSchema = mongoose.Schema(
     },
     ratings: [
       {
-        userId: {
+        userEmail: {
           //type: mongoose.Schema.Types.ObjectId,
-          type: Number,
+          type: String,
           required: false,
           //ref: "User",
         },
