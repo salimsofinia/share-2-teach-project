@@ -319,6 +319,32 @@ app.put("/api/file/:id", authenticateJWT, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+//Reporting, if file is reported its validation will be set to false form moderator to review
+app.put("/api/file/report/:id", authenticateJWT, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const valUpdate = false;
+
+    const file = await File.findByIdAndUpdate(
+      id,
+      { Validation: valUpdate },
+      { new: true, runValidators: true }
+    ).then((updatedFile) => {
+      if (!updatedFile) {
+        console.log(error.message);
+        res.status(404).json({ message: "Resource not found" });
+      } else {
+        console.log("File reported: ", updatedFile);
+        res.status(200).json(updatedFile);
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 /*
 app.delete("/api/file", authenticateJWT, async (req, res) => {
   try {
