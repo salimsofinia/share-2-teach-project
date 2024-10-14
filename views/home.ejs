@@ -1,0 +1,54 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+  </head>
+  <body>
+    <h1>Welcome to Share2Teach</h1>
+    <p>
+      Welcome, <%= user.firstname %>! You're now logged in. Your credential: <%=
+      user.credential %>
+    </p>
+    <p>Use the navigation to explore or manage your profile.</p>
+    <form action="/logout" method="POST">
+      <button type="submit">Sign Out</button>
+    </form>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+  </head>
+  <body>
+    <h1>Welcome to Share2Teach</h1>
+    <% if (user) { %>
+    <p>
+      Welcome, <%= user.firstname %>! You're now logged in. Your credential: <%=
+      user.credential %>
+    </p>
+    <% if (user.credential === "Admin") { %>
+    <button onclick="window.location.href='/registerrole';">
+      Register Role
+    </button>
+    <% } %> <% } else { %>
+    <p>Welcome! Please sign in or register to explore our services.</p>
+    <% } %>
+    <button onclick="window.location.href='/faq';">FAQ</button>
+    <% if (user) { %>
+    <form action="/logout" method="POST">
+      <button type="submit">Sign Out</button>
+    </form>
+    <% } else { %>
+    <form action="/login" method="GET">
+      <button type="submit">Sign In</button>
+    </form>
+    <% } %>
+    <p>Use the navigation to explore or manage your profile.</p>
+  </body>
+</html>

@@ -6,27 +6,34 @@
     <title>Register</title>
   </head>
   <body>
-    <h1>SIGN UP!</h1>
+    <h1>SIGN UP</h1>
     <form action="/register" method="POST">
       <div>
-        <label for="username">Enter Username:</label>
-        <input
-          type="text"
-          name="username"
-          id="username"
-          placeholder="username"
-        />
+        <label for="firstname">Enter First Name:</label>
+        <input type="text" name="firstname" id="firstname" required />
+      </div>
+      <div>
+        <label for="lastname">Enter Last Name:</label>
+        <input type="text" name="lastname" id="lastname" required />
+      </div>
+      <div>
+        <label for="email">Enter Email Address:</label>
+        <input type="email" name="email" id="email" required />
+      </div>
+      <div>
+        <label for="affiliation">Enter Affiliation:</label>
+        <input type="text" name="affiliation" id="affiliation" required />
+      </div>
+      <div>
+        <label for="credential">Enter Credentials:</label>
+        <input type="text" name="credential" id="credential" required />
       </div>
       <div>
         <label for="password">Enter Password:</label>
-        <input
-          type="text"
-          name="password"
-          id="password"
-          placeholder="password"
-        />
+        <input type="password" name="password" id="password" required />
       </div>
-      <button>Sign Up</button>
+      <button type="submit">Sign Up</button>
+      <button type="button" onclick="window.location.href='/';">Cancel</button>
     </form>
   </body>
 </html>
