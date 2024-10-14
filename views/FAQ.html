@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Share2Teach</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Add styles for the datagrid */
+        .datagrid {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        .datagrid th, .datagrid td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .datagrid th {
+            background-color: #3c1361;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -33,14 +50,33 @@
     </header>
     <main>
         <div class="regbox">
-            <h1>Frequently asked questions:</h1>
+            <h1>Frequently Asked Questions:</h1>
             <div class="subbox">
-                <form>
-                    
-                </form>
+                <table class="datagrid">
+                    <thead>
+                        <tr>
+                            <th>Question</th>
+                            <th>Answer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Sample data -->
+                        <tr>
+                            <td>What is Share2Teach?</td>
+                            <td>A platform for sharing educational resources.</td>
+                        </tr>
+                        <tr>
+                            <td>How do I contribute?</td>
+                            <td>Visit the Contribute page and follow the guidelines.</td>
+                        </tr>
+                        <tr>
+                            <td>What type of resources are available?</td>
+                            <td>Textbooks, videos, articles, and more.</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-
     </main>
     <footer>
         <p>&copy; 2024 Share 2 Teach</p>

@@ -23,17 +23,19 @@
                     <label for="name">First name:</label>
                     <input type="text" id="name" name="name"><br><br>
                     <label for="email">Last Name:</label>
-                    <input type="email" id="email" name="email"><br><br>
+                    <input type="text" id="email" name="email"><br><br>
                     <label for="phone">E-Mail:</label>
-                    <input type="tel" id="phone" name="phone"><br><br>
+                    <input type="text" id="phone" name="phone"><br><br>
                     <label for="address">Affiliation:</label>
                     <input type="text" id="address" name="address"><br><br>
                     <label for="city">Credentials:</label>
                     <input type="text" id="city" name="city"><br><br>
                     <label for="state">Password:</label>
                     <input type="text" id="state" name="state"><br><br>
+                    <input class="hide-when-not-admin" type="checkbox" id="checkbox-id" name="checkbox-name" value="checkbox-value">
+                    <label class="hide-when-not-admin" for="checkbox-id">Is-Admin</label><br><br>
                     <div class="buttons">
-                <button type="create_account">Create Account</button>
+                <button type="button">Create Account</button>
                 <button type="button" onclick="location.href='landing.html'">Cancel</button>
             </div>
                 </form>

@@ -250,3 +250,11 @@ button:hover {
 .logged-in .hide-when-logged-out {
     display: block;
   }
+
+  .hide-when-not-admin {
+    display: none;
+  }
+  
+.logged-in-as-admin .hide-when-not-admin {
+    display: block;
+  }
