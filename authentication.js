@@ -156,19 +156,16 @@ const User = require("./models/user");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 require("dotenv").config();
-
+const routes = require("./mongodb.js");
 const app = express();
 app.set("view engine", "ejs");
 app.set("views", "views");
 
 mongoose
-  .connect(
-    "mongodb+srv://salimsofinia:Salim123@backenddb.4f0qd.mongodb.net/Share2Teach?retryWrites=true&w=majority&appName=BackendDB",
-    {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    }
-  )
+  .connect(process.env.MONGODB_LINK, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
     console.log("MongoDB Connected!");
   })
@@ -187,70 +184,51 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-/*const*/ function requireLogin(req, res, next) {
+//function that runs as middleware in requests
+function requireLogin(req, res, next) {
+  //get access token from cookie that gets generated when user logs in
   const accessToken = req.cookies.accessToken;
+  //undefined means no token was generated or it has expired, user has to log in again to gain a token
   if (accessToken === undefined) {
     return res.redirect("/login");
     //return res.status(403).json({ message: "Token has expired" });
   }
+  //if access token was generated then verify it
   if (accessToken) {
     jwt.verify(accessToken, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
         console.error("Token verification failed:", err.message);
       } else {
-        // Extracted data from the token
-        //console.log("User:", decoded);
-        // Access payload fields
-        //console.log("ID:", decoded.id);
+        //get user id from decoded token
         const tokenID = decoded.id;
+        //get user details from database using userID that was gained from token
         const user = User.findById(tokenID);
+        //if user is not found return to login page
         if (!user) {
           return res.redirect("/login");
         }
+        //attach found user to the request that called the middleware function
         req.user = decoded;
+        //allow the request that called the middleware function to continue
         next();
       }
     });
   }
-
-  /*if (!req.session.user_id) {
-    return res.redirect("/login");
-  }
-  next();*/
 }
-
-app.get("/users", async (req, res) => {
-  try {
-    const users = await User.find({});
-    res.json(users);
-  } catch (error) {
-    res.json(error.message);
-  }
-});
 
 app.get("/faq", requireLogin, (req, res) => {
   res.render("faq");
 });
 
 app.get("/registerrole", requireLogin, async (req, res) => {
-  console.log(req.user.credential);
-  //const user = User.findById(req.user.id);
-  //console.log(user.email);
   if (req.user && req.user.credential === "Admin") {
     res.render("registerrole");
   } else {
     res.redirect("/");
   }
-
-  //const user = await User.findById(req.session.user_id);
-  /*if (user && user.credential === "Admin") {
-    res.render("registerrole");
-  } else {
-    res.redirect("/");
-  }*/
 });
 
-//What is role text box?
+//What is role text box if credential already exists?
 /*
 app.post("/registerrole", requireLogin, async (req, res) => {
   try {
@@ -283,6 +261,7 @@ app.post("/registerrole", requireLogin, async (req, res) => {
   }
 });*/
 
+//if token exists in cookies then user is logged in
 app.get("/login", (req, res) => {
   if (req.cookies.accessToken) {
     res.redirect("/"); // Redirect to home if already logged in
@@ -291,6 +270,7 @@ app.get("/login", (req, res) => {
   }
 });
 
+//if token exists in cookies then user is logged in
 app.get("/register", (req, res) => {
   if (req.cookies.accessToken) {
     res.redirect("/"); // Redirect to home if already logged in
@@ -299,9 +279,9 @@ app.get("/register", (req, res) => {
   }
 });
 
+//if user is logged in and found in db then go to home page
 app.get("/", requireLogin, async (req, res) => {
   let user = null;
-  console.log(req.user.id);
   const userID = req.user.id;
   if (req.user) {
     user = await User.findById(userID);
@@ -309,16 +289,19 @@ app.get("/", requireLogin, async (req, res) => {
   res.render("home", { user: user });
 });
 
+//user login and token generation
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
+  //search in db if user email and password are correct
   const foundUser = await User.findAndValidate(email, password);
+  //if found create user with same details that will appear in payload of generated JWT token
   if (foundUser) {
     const user = {
       id: foundUser._id,
       email: foundUser.email,
       credential: foundUser.credential,
     };
-
+    //token is signed with user details and will expire in 1 hour
     const accessToken = jwt.sign(user, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
@@ -334,24 +317,19 @@ app.post("/login", async (req, res) => {
       if (err) {
         console.error("Token verification failed:", err.message);
       } else {
-        // Extracted data from the token
-        //console.log("Decoded Token Data:", decoded);
+        console.log("Token verified and is valid");
         // Access payload fields
-        console.log("Username:", decoded.email);
-        //userUpload = decoded.username;
+        console.log("User email:", decoded.email);
       }
     });
-    //res.json({ accessToken });
     console.log();
     res.redirect("/");
-
-    //req.session.user_id = foundUser._id;
-    //res.redirect("/");
   } else {
     res.redirect("/login");
   }
 });
 
+//new user is created and saved in db
 app.post("/register", async (req, res) => {
   const { firstname, lastname, email, affiliation, credential, password } =
     req.body;
@@ -364,18 +342,16 @@ app.post("/register", async (req, res) => {
     password,
   });
   await user.save();
+  //when user has been created then go back to login page
   res.redirect("/login");
 });
 
+//when user logs out all cookies are destroyed, this includes the access token
 app.post("/logout", (req, res) => {
   Object.keys(req.cookies).forEach((cookieName) => {
     res.clearCookie(cookieName);
   });
   console.log("All cookies destroyed");
-
-  /* req.session.destroy(() => {
-    res.redirect("/login");
-  });*/
   res.redirect("/login");
 });
 
