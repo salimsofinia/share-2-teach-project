@@ -12,6 +12,8 @@ const path = require("path");
 const { Console, error } = require("console");
 const cookieParser = require("cookie-parser");
 const { collection } = require("./models/user.js");
+const User = require("./models/user.js");
+const Login = require("./authentication.js");
 require("dotenv").config();
 
 // JWT Authentication Middleware
@@ -54,34 +56,81 @@ const app = express();
 
 app.use(cookieParser());
 app.use(express.json());
-/*
-// Example login route to issue JWT tokens
-app.post("/api/login", (req, res) => {
-  const { username, password } = req.body;
-
-  // Replace with real user validation logic
-  const user = { id: 1, username: "test_user" };
-
-  if (username === "test_user" && password === "password123") {
-    const accessToken = jwt.sign(user, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    // Set the token in an HttpOnly cookie
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true, // Prevent access via JavaScript
-      secure: true, // Only send over HTTPS
-      sameSite: "strict", // Helps prevent CSRF attacks
-      maxAge: 3600000, // Cookie expiry time (in milliseconds) (1 hour)
-    });
-    res.json({ accessToken });
-  } else {
-    res.status(401).json({ message: "Invalid credentials" });
-  }
-});*/
 
 app.get("/", (req, res) => {
   res.send("Hello from Node API");
 });
+
+//all products
+app.get("/api/users", authenticateJWT, async (req, res) => {
+  try {
+    if (req.user.credential === "Admin") {
+      const users = await User.find({});
+      res.status(200).json(users);
+    } else {
+      res.status(403).json({ message: "Only admins can access this data " });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+//get single product
+app.get("/api/user/:id", authenticateJWT, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const client = await Client.findById(id);
+    res.status(200).json(client);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post("/api/user", authenticateJWT, async (req, res) => {
+  try {
+    const newUser = await User.create(req.body);
+
+    res.status(200).json(newUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//update a product
+app.put("/api/user/:id", authenticateJWT, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const userUpdate = await User.findByIdAndUpdate(id, req.body);
+
+    if (!userUpdate) {
+      return res.status(404).json({ message: "Client not found" });
+    }
+
+    const updatedUser = await User.findById(id);
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//delete a product
+app.delete("/api/user/:id", authenticateJWT, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const userDelete = await User.findByIdAndDelete(id);
+
+    if (!userDelete) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "User deleted succesfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+/*
 //all products
 app.get("/api/clients", authenticateJWT, async (req, res) => {
   try {
@@ -145,7 +194,7 @@ app.delete("/api/client/:id", authenticateJWT, async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-});
+});*/
 
 //faq's
 //all faq's
@@ -209,10 +258,10 @@ app.post("/api/file/rate/:id", authenticateJWT, async (req, res) => {
     const file = await File.findById(id);
 
     // Ensure the rating is valid
-    if (!rating || rating < 1 || rating > 5) {
+    if (!rating || rating < 0 || rating > 5) {
       return res
         .status(400)
-        .json({ message: "Rating must be between 1 and 5." });
+        .json({ message: "Rating must be between 0 and 5." });
     }
 
     userEmail = req.user.email;
@@ -271,8 +320,14 @@ app.post("/api/file/rate/:id", authenticateJWT, async (req, res) => {
 //get files that are not validated
 app.get("/api/file/validate", authenticateJWT, async (req, res) => {
   try {
-    const files = await File.find({ Validation: false });
-    res.status(200).json({ files });
+    if (req.user.credential === "Admin") {
+      const files = await File.find({ Validation: false });
+      res.status(200).json({ files });
+    } else {
+      res.status(403).json({
+        message: "Invalid Credential: Only Admins may validate files",
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: "Error retrieving files: ", error });
   }
@@ -297,24 +352,31 @@ app.get("/api/file/search/:query", authenticateJWT, async (req, res) => {
 //if true will get set to false, if false will get set to true
 app.put("/api/file/:id", authenticateJWT, async (req, res) => {
   try {
-    const { id } = req.params;
+    if (req.user.credential === "Admin") {
+      const { id } = req.params;
 
-    const fileUpdate = await File.findById(id);
-    const valUpdate = !fileUpdate.Validation;
+      const fileUpdate = await File.findById(id);
+      const valUpdate = !fileUpdate.Validation;
 
-    const file = await File.findByIdAndUpdate(
-      id,
-      { Validation: valUpdate },
-      { new: true, runValidators: true }
-    ).then((updatedFile) => {
-      if (!updatedFile) {
-        console.log(error.message);
-        res.status(404).json({ message: "Resource not found" });
-      } else {
-        console.log("File validated: ", updatedFile);
-        res.status(200).json(updatedFile);
-      }
-    });
+      const file = await File.findByIdAndUpdate(
+        id,
+        { Validation: valUpdate },
+        { new: true, runValidators: true }
+      ).then((updatedFile) => {
+        if (!updatedFile) {
+          console.log(error.message);
+          res.status(404).json({ message: "Resource not found" });
+        } else {
+          console.log("File validated: ", updatedFile);
+          res.status(200).json(updatedFile);
+        }
+      });
+    } else {
+      res.status(403).json({
+        message:
+          "Invalid Credential: Only Admins may validate or invalidate files",
+      });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -345,6 +407,7 @@ app.put("/api/file/report/:id", authenticateJWT, async (req, res) => {
   }
 });
 
+//for testing, when db is full of inaccurate data and you want to clear it
 /*
 app.delete("/api/file", authenticateJWT, async (req, res) => {
   try {
@@ -414,19 +477,9 @@ app.post(
     const filePath = path.join(__dirname, "/uploads", req.file.originalname);
     //verify JWT token to gain access to user thats logged in
     const tokenReq = req.cookies.accessToken;
-    var userUpload = "";
-    jwt.verify(tokenReq, process.env.JWT_SECRET, (err, decoded) => {
-      if (err) {
-        console.error("Token verification failed:", err.message);
-      } else {
-        // Extracted data from the token
-        console.log("Decoded Token Data:", decoded);
-        // Access payload fields
-        console.log("Username:", decoded.email);
-        userUpload = decoded.email;
-      }
-    });
-    console.log(req.file.originalname);
+    const userUpload = req.user.email;
+
+    console.log(userUpload);
     const resource = Cloudinary.cloudinary.api.resource(
       req.file.originalname,
       { resource_type: "raw" },
@@ -481,28 +534,18 @@ app.post(
           );
         } else {
           console.log("File already exists: ", result);
-          res.status(40).json({
+          res.status(404).json({
             message: "File already exists, rename the file and try again: ",
             result,
           });
         }
       }
     );
-    /*
-    //remove file that is stored locally
-    fs.unlink(filePath, (error) => {
-      if (error) {
-        console.log(error.message);
-      }
-    });*/
   }
 );
 
 mongoose
-  .connect(
-    //"mongodb+srv://lohardjvr27:Lohard%401@backenddb.4f0qd.mongodb.net/Share2Teach?retryWrites=true&w=majority&appName=BackendDB"
-    "mongodb+srv://salimsofinia:Salim123@backenddb.4f0qd.mongodb.net/Share2Teach?retryWrites=true&w=majority&appName=BackendDB"
-  )
+  .connect(process.env.MONGODB_LINK)
   .then(() => {
     console.log("Connected to database");
     app.listen(4000, () => {

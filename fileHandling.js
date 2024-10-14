@@ -1,3 +1,4 @@
+/*
 const express = require("express");
 const app = express();
 const Cloudinary = require("./cloudinary/index.js");
@@ -55,7 +56,7 @@ app.delete("/api/delete/:id", (req, res) => {
           console.error("Error deleting file:", error);
           res.status(404).json({
             success: false,
-            message: "File with id " + id + " not found",
+            message: "File with id " + id + " not found2222222222222",
           });
         } else {
           //send message that file is successfully deleted
@@ -126,3 +127,4 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log("listening on port " + port);
 });
+*/
