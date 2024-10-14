@@ -14,6 +14,8 @@ const cookieParser = require("cookie-parser");
 const { collection } = require("./models/user.js");
 const User = require("./models/user.js");
 const Login = require("./authentication.js");
+const Report = require("./models/report.model.js");
+const UserAction = require("./models/user_actions.model.js");
 require("dotenv").config();
 
 // JWT Authentication Middleware
@@ -61,11 +63,29 @@ app.get("/", (req, res) => {
   res.send("Hello from Node API");
 });
 
-//all products
+//get useractions
+app.get("/api/useractions", authenticateJWT, async (req, res) => {
+  try {
+    const useractions = await UserAction.find({});
+    const useraction = new UserAction({
+      action: "Get User Actions",
+    });
+    useraction.save();
+    res.status(200).json(useractions);
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+});
+
+//all users
 app.get("/api/users", authenticateJWT, async (req, res) => {
   try {
-    if (req.user.credential === "Admin") {
+    if (req.user.role === "Admin") {
       const users = await User.find({});
+      const useraction = new UserAction({
+        action: "Get Users",
+      });
+      useraction.save();
       res.status(200).json(users);
     } else {
       res.status(403).json({ message: "Only admins can access this data " });
@@ -74,140 +94,104 @@ app.get("/api/users", authenticateJWT, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-//get single product
+//get single user
 app.get("/api/user/:id", authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
-    const client = await Client.findById(id);
-    res.status(200).json(client);
+    const user = await User.findById(id);
+    const useraction = new UserAction({
+      action: "Get User",
+    });
+    useraction.save();
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
-
+//create new user
 app.post("/api/user", authenticateJWT, async (req, res) => {
   try {
-    const newUser = await User.create(req.body);
-
-    res.status(200).json(newUser);
+    if (req.user.role === "Admin") {
+      const newUser = await User.create(req.body);
+      const useraction = new UserAction({
+        action: "Create User",
+      });
+      useraction.save();
+      res.status(200).json(newUser);
+    } else {
+      res.status(403).json({ message: "Only admins can access this data " });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-//update a product
+//update a user
 app.put("/api/user/:id", authenticateJWT, async (req, res) => {
   try {
-    const { id } = req.params;
+    if (req.user.role === "Admin") {
+      const { id } = req.params;
 
-    const userUpdate = await User.findByIdAndUpdate(id, req.body);
+      const userUpdate = await User.findByIdAndUpdate(id, req.body);
 
-    if (!userUpdate) {
-      return res.status(404).json({ message: "Client not found" });
+      if (!userUpdate) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const updatedUser = await User.findById(id);
+      const useraction = new UserAction({
+        action: "Update User",
+      });
+      useraction.save();
+      res.status(200).json(updatedUser);
+    } else {
+      res.status(403).json({ message: "Only admins can access this data " });
     }
-
-    const updatedUser = await User.findById(id);
-    res.status(200).json(updatedUser);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-//delete a product
+//delete a user
 app.delete("/api/user/:id", authenticateJWT, async (req, res) => {
   try {
-    const { id } = req.params;
+    if (req.user.role === "Admin") {
+      const { id } = req.params;
 
-    const userDelete = await User.findByIdAndDelete(id);
+      const userDelete = await User.findByIdAndDelete(id);
 
-    if (!userDelete) {
-      return res.status(404).json({ message: "User not found" });
+      if (!userDelete) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const useraction = new UserAction({
+        action: "Delete User",
+      });
+      useraction.save();
+      res.status(200).json({ message: "User deleted succesfully" });
+    } else {
+      res.status(403).json({ message: "Only admins can access this data " });
     }
-
-    res.status(200).json({ message: "User deleted succesfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
-
-/*
-//all products
-app.get("/api/clients", authenticateJWT, async (req, res) => {
-  try {
-    const client = await Client.find({});
-    res.status(200).json(client);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-//get single product
-app.get("/api/client/:id", authenticateJWT, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const client = await Client.findById(id);
-    res.status(200).json(client);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-app.post("/api/client", authenticateJWT, async (req, res) => {
-  try {
-    const client = await Client.create(req.body);
-
-    res.status(200).json(client);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-//update a product
-app.put("/api/client/:id", authenticateJWT, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const client = await Client.findByIdAndUpdate(id, req.body);
-
-    if (!client) {
-      return res.status(404).json({ message: "Client not found" });
-    }
-
-    const updatedClient = await Client.findById(id);
-    res.status(200).json(updatedClient);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-//delete a product
-app.delete("/api/client/:id", authenticateJWT, async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const client = await Client.findByIdAndDelete(id);
-
-    if (!client) {
-      return res.status(404).json({ message: "Client not found" });
-    }
-
-    res.status(200).json({ message: "Client deleted succesfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});*/
 
 //faq's
 //all faq's
-app.get("/api/faqs", authenticateJWT, async (req, res) => {
+app.get("/api/faqs", async (req, res) => {
   try {
     const faq = await Faq.find({});
+    const useraction = new UserAction({
+      action: "Get FAQ",
+    });
+    useraction.save();
     res.status(200).json(faq);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 //display a desired faq
-app.get("/api/faq/:id", authenticateJWT, async (req, res) => {
+app.get("/api/faq/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const faq = await Faq.findById(id);
@@ -218,21 +202,29 @@ app.get("/api/faq/:id", authenticateJWT, async (req, res) => {
 });
 
 //files
-//
-app.get("/api/file", authenticateJWT, async (req, res) => {
+//show all files
+app.get("/api/file", async (req, res) => {
   try {
     const file = await File.find({});
-    console.log(req.user);
+    const useraction = new UserAction({
+      action: "Get All Files",
+    });
+    useraction.save();
     res.status(200).json(file);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-app.get("/api/file/:id", authenticateJWT, async (req, res) => {
+//get specific file
+app.get("/api/file/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const file = await File.findById(id);
+    const useraction = new UserAction({
+      action: "Get File",
+    });
+    useraction.save();
     res.status(200).json(file);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -241,19 +233,25 @@ app.get("/api/file/:id", authenticateJWT, async (req, res) => {
 
 //function to calculate average rating score
 function calcAvgRating(ratings) {
+  console.log(ratings);
   if (ratings.length === 0) {
     return 0;
   }
-  //accumalative, current
-  const total = ratings.reduce((acc, cur) => acc + cur.rating, 0);
-  return (total / ratings.length).toFixed(2);
+  let sum = 0;
+
+  ratings.forEach((rating) => {
+    sum += rating;
+  });
+
+  console.log(sum);
+  return (sum / ratings.length).toFixed(2);
 }
 
-//Rating files, user can only rate a specific file once
-app.post("/api/file/rate/:id", authenticateJWT, async (req, res) => {
+//Rating files
+app.post("/api/file/rate/:id", async (req, res) => {
   const { id } = req.params;
   const { rating } = req.body;
-
+  //local storage on browsers could be implented to minimize a user rating a file multiple times
   try {
     const file = await File.findById(id);
 
@@ -264,53 +262,27 @@ app.post("/api/file/rate/:id", authenticateJWT, async (req, res) => {
         .json({ message: "Rating must be between 0 and 5." });
     }
 
-    userEmail = req.user.email;
-    console.log("userEmail: ", userEmail);
-    // const file = File.findById(id);
     if (!file) {
       console.log("File not found");
       return res.status(404).json({ message: "File not found" });
     }
-    console.log(id);
-    if (!file.ratings || !Array.isArray(file.ratings)) {
-      console.log("No ratings found for this file.");
-      file.ratings = [];
-      file.ratings.push({ userEmail, rating });
+    const updatedFile = await File.findByIdAndUpdate(
+      file.id,
+      { $push: { ratings: rating } },
+      { new: true }
+    );
 
-      file.save();
-      // return res.status(200).json(file);
-      return res.status(200).json({
-        message: "Rating added successfully",
-        fileName: file.fileName,
-        fileUrl: file.fileUrl,
-        Validation: file.Validation,
-        ratings: file.ratings,
-        averageRatings: calcAvgRating(file.ratings),
-      });
-    }
-    const ratingExists = await File.find({
-      fileName: file.fileName,
-      "ratings.userEmail": userEmail,
+    const useraction = new UserAction({
+      action: "File Rate",
     });
-    console.log(ratingExists);
-
-    if (ratingExists.length != 0) {
-      return res
-        .status(400)
-        .json({ message: "User has already rated this file" });
-    }
-
-    file.ratings.push({ userEmail, rating });
-
-    file.save();
-
+    useraction.save();
     res.status(200).json({
       message: "Rating added successfully",
-      fileName: file.fileName,
-      fileUrl: file.fileUrl,
-      Validation: file.Validation,
-      ratings: file.ratings,
-      averageRatings: calcAvgRating(file.ratings),
+      fileName: updatedFile.fileName,
+      fileUrl: updatedFile.fileUrl,
+      Validation: updatedFile.Validation,
+      ratings: updatedFile.ratings,
+      averageRatings: calcAvgRating(updatedFile.ratings),
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -318,10 +290,14 @@ app.post("/api/file/rate/:id", authenticateJWT, async (req, res) => {
 });
 
 //get files that are not validated
-app.get("/api/file/validate", authenticateJWT, async (req, res) => {
+app.get("/api/files/validate", authenticateJWT, async (req, res) => {
   try {
-    if (req.user.credential === "Admin") {
+    if (req.user.role === "Admin" || req.user.role === "Moderator") {
       const files = await File.find({ Validation: false });
+      const useraction = new UserAction({
+        action: "Get Files Unvalidated",
+      });
+      useraction.save();
       res.status(200).json({ files });
     } else {
       res.status(403).json({
@@ -334,13 +310,22 @@ app.get("/api/file/validate", authenticateJWT, async (req, res) => {
 });
 
 //Search for files containing text in their file name
-app.get("/api/file/search/:query", authenticateJWT, async (req, res) => {
+app.get("/api/file/search/:query", async (req, res) => {
   const { query } = req.params;
 
   try {
     const files = await File.find({
-      fileName: { $regex: query, $options: "i" }, //"i indicates case insensitive"
+      $or: [
+        { fileName: { $regex: query, $options: "i" } }, //"i indicates case insensitive"},
+        { subject: { $regex: query, $options: "i" } }, //"i indicates case insensitive"},
+        { grade: { $regex: query, $options: "i" } }, //"i indicates case insensitive"},
+      ],
     });
+
+    const useraction = new UserAction({
+      action: "File Search",
+    });
+    useraction.save();
     res.status(200).json(files);
   } catch (error) {
     console.error("Error retrieving files:", error);
@@ -352,22 +337,27 @@ app.get("/api/file/search/:query", authenticateJWT, async (req, res) => {
 //if true will get set to false, if false will get set to true
 app.put("/api/file/:id", authenticateJWT, async (req, res) => {
   try {
-    if (req.user.credential === "Admin") {
+    if (req.user.role === "Admin" || req.user.role === "Moderator") {
       const { id } = req.params;
+      const { validation, comments } = req.body;
 
-      const fileUpdate = await File.findById(id);
-      const valUpdate = !fileUpdate.Validation;
+      //const fileUpdate = await File.findById(id);
+      const valUpdate = validation;
 
       const file = await File.findByIdAndUpdate(
         id,
-        { Validation: valUpdate },
+        { Validation: valUpdate, comments: comments },
         { new: true, runValidators: true }
       ).then((updatedFile) => {
         if (!updatedFile) {
           console.log(error.message);
           res.status(404).json({ message: "Resource not found" });
         } else {
-          console.log("File validated: ", updatedFile);
+          console.log("File moderated: ", updatedFile);
+          const useraction = new UserAction({
+            action: "File Moderate",
+          });
+          useraction.save();
           res.status(200).json(updatedFile);
         }
       });
@@ -382,88 +372,90 @@ app.put("/api/file/:id", authenticateJWT, async (req, res) => {
   }
 });
 
-//Reporting, if file is reported its validation will be set to false form moderator to review
-app.put("/api/file/report/:id", authenticateJWT, async (req, res) => {
+app.get("/api/report", async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const valUpdate = false;
-
-    const file = await File.findByIdAndUpdate(
-      id,
-      { Validation: valUpdate },
-      { new: true, runValidators: true }
-    ).then((updatedFile) => {
-      if (!updatedFile) {
-        console.log(error.message);
-        res.status(404).json({ message: "Resource not found" });
-      } else {
-        console.log("File reported: ", updatedFile);
-        res.status(200).json(updatedFile);
-      }
-    });
+    const reports = await Report.find({});
+    res.status(200).json(reports);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-//for testing, when db is full of inaccurate data and you want to clear it
-/*
-app.delete("/api/file", authenticateJWT, async (req, res) => {
+//Reporting, if file is reported report gets added to database
+app.post("/api/file/report/:id", async (req, res) => {
   try {
-    //const { id } = req.params;
+    const { reason } = req.body;
+    const { id } = req.params;
 
-    const file = await File.deleteMany({});
-
-    if (!file) {
-      return res.status(404).json({ message: "File not found" });
+    const file = await File.findById(id);
+    if (file) {
+      const fileName = file.fileName;
+      console.log(fileName);
+      const report = new Report({ file: fileName, reason: reason });
+      await report.save();
+      const useraction = new UserAction({
+        action: "File Report",
+      });
+      useraction.save();
+      res
+        .status(500)
+        .json({ message: "Report submitted for file: ", fileName });
+    } else {
     }
-
-    res.status(200).json({ message: "Files deleted succesfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-});*/
+});
 
 app.delete("/api/file/:id", authenticateJWT, async (req, res) => {
   try {
-    //const file = await File.findByIdAndDelete(id);
-    const { id } = req.params;
-    File.findByIdAndDelete(id)
-      .then((deletedFile) => {
-        if (deletedFile) {
-          console.log("File deleted from db:", deletedFile);
-          Cloudinary.cloudinary.uploader.destroy(
-            deletedFile.fileName,
-            { resource_type: "raw" },
-            function (error, result) {
-              if (error) {
-                console.error("Error deleting file:", error);
-                res.status(404).json({
-                  success: false,
-                  message:
-                    "File with id " + deletedFile.fileName + " not found",
-                });
-              } else {
-                //send message that file is successfully deleted
-                res.status(200).json({
-                  success: true,
-                  message: "File with id " + id + " successfully deleted: ",
-                });
-              }
+    if (req.user) {
+      const { id } = req.params;
+      File.findByIdAndDelete(id)
+        .then((deletedFile) => {
+          if (deletedFile) {
+            console.log("File deleted from db:", deletedFile);
+            Cloudinary.cloudinary.uploader.destroy(
+              deletedFile.fileName,
+              { resource_type: "raw" },
+              function (error, result) {
+                if (error) {
+                  console.error("Error deleting file:", error);
+                  res.status(404).json({
+                    success: false,
+                    message:
+                      "File with id " + deletedFile.fileName + " not found",
+                  });
+                } else {
+                  //send message that file is successfully deleted
+                  const useraction = new UserAction({
+                    action: "File Delete",
+                  });
+                  useraction.save();
+                  res.status(200).json({
+                    success: true,
+                    message: "File with id " + id + " successfully deleted: ",
+                  });
+                }
 
-              console.log("File Deleted from Cloudinary:", result);
-            }
-          );
-        } else {
-          console.log("File not found");
-          res.status(404).json({ message: "File not found" });
-        }
-      })
-      .catch((err) => {
-        console.error("Error deleting file:", err);
-        //res.status(404).json({ message: "File not found" });
+                console.log("File Deleted from Cloudinary:", result);
+              }
+            );
+          } else {
+            console.log("File not found");
+            res.status(404).json({ message: "File not found" });
+          }
+        })
+        .catch((err) => {
+          console.error("Error deleting file:", err);
+          //res.status(404).json({ message: "File not found" });
+        });
+    } else {
+      res.status(403).json({
+        message:
+          "Invalid Credential: Only Admins, Moderators or Educators may contribute or delete files",
       });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -474,73 +466,97 @@ app.post(
   authenticateJWT,
   upload.single("file"),
   async (req, res) => {
-    const filePath = path.join(__dirname, "/uploads", req.file.originalname);
-    //verify JWT token to gain access to user thats logged in
-    const tokenReq = req.cookies.accessToken;
-    const userUpload = req.user.email;
+    try {
+      const { subject, grade } = req.body;
+      if (req.user) {
+        const filePath = path.join(
+          __dirname,
+          "/uploads",
+          req.file.originalname
+        );
+        //verify JWT token to gain access to user thats logged in
+        const tokenReq = req.cookies.accessToken;
+        const userUpload = req.user.email;
 
-    console.log(userUpload);
-    const resource = Cloudinary.cloudinary.api.resource(
-      req.file.originalname,
-      { resource_type: "raw" },
-      function (error, result) {
-        if (error) {
-          console.log("File not exists:", error);
-          // Upload a file path.join(__dirname, req.file)
-          Cloudinary.cloudinary.uploader.upload(
-            filePath,
-            {
-              resource_type: "raw",
-              public_id: req.file.originalname,
-              overwrite: true,
-            },
-            function (error, result) {
-              console.log("File Uploaded Successfully!");
-              console.log(filePath);
-              console.log(req.originalname);
-              console.log(result);
-              console.log(result.secure_url);
-              const uploadedUrl = result.secure_url;
+        console.log(userUpload);
+        const resource = Cloudinary.cloudinary.api.resource(
+          req.file.originalname,
+          { resource_type: "raw" },
+          function (error, result) {
+            if (error) {
+              console.log("File does not exist:", error);
+              // Upload a file path.join(__dirname, req.file)
+              Cloudinary.cloudinary.uploader.upload(
+                filePath,
+                {
+                  resource_type: "raw",
+                  public_id: req.file.originalname,
+                  overwrite: false,
+                },
+                function (error, result) {
+                  console.log("File Uploaded Successfully!");
+                  console.log(filePath);
+                  console.log(req.originalname);
+                  console.log(result);
+                  console.log(result.secure_url);
+                  const uploadedUrl = result.secure_url;
 
-              if (error) {
-                console.error("Upload Error:", error);
-              } else {
-                try {
-                  const newFile = new File({
-                    fileName: req.file.originalname,
-                    fileUrl: uploadedUrl,
-                    Validation: false,
-                    fileSize: req.file.size,
-                    fileType: req.file.mimetype,
-                    uploadUser: userUpload,
-                  });
-                  newFile
-                    .save()
-                    .then((file) => console.log("File created:", file))
-                    .catch((err) => console.error("Error creating file:", err));
-                  res.status(200).json(newFile);
-                } catch (error) {
-                  res.status(500).json({ message: error.message });
-                }
-
-                //remove file that is stored locally
-                fs.unlink(filePath, (error) => {
                   if (error) {
-                    console.log(error.message);
+                    console.error("Upload Error:", error);
+                  } else {
+                    try {
+                      const newFile = new File({
+                        fileName: req.file.originalname,
+                        fileUrl: uploadedUrl,
+                        Validation: false,
+                        fileSize: req.file.size,
+                        fileType: req.file.mimetype,
+                        uploadUser: userUpload,
+                        subject: subject,
+                        grade: grade,
+                      });
+                      newFile
+                        .save()
+                        .then((file) => console.log("File created:", file))
+                        .catch((err) =>
+                          console.error("Error creating file:", err)
+                        );
+                      const useraction = new UserAction({
+                        action: "File Upload",
+                      });
+                      useraction.save();
+                      res.status(200).json(newFile);
+                    } catch (error) {
+                      res.status(500).json({ message: error.message });
+                    }
+
+                    //remove file that is stored locally
+                    fs.unlink(filePath, (error) => {
+                      if (error) {
+                        console.log(error.message);
+                      }
+                    });
                   }
-                });
-              }
+                }
+              );
+            } else {
+              console.log("File already exists: ", result);
+              res.status(404).json({
+                message: "File already exists, rename the file and try again: ",
+                result,
+              });
             }
-          );
-        } else {
-          console.log("File already exists: ", result);
-          res.status(404).json({
-            message: "File already exists, rename the file and try again: ",
-            result,
-          });
-        }
+          }
+        );
+      } else {
+        res.status(403).json({
+          message:
+            "Invalid Credential: Only Admins, Moderators or Educators may contribute or delete files",
+        });
       }
-    );
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
   }
 );
 
