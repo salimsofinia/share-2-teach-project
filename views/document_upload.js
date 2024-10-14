@@ -9,6 +9,10 @@ fileInput.addEventListener('change', (e) => {
     documentName.innerText = file.name;
 });
 
+function updateMenuVisibility() {
+    document.body.classList.toggle('logged-in', isLoggedIn);
+  }
+  
 // Function to open popup
 function openPopup() {
     document.getElementById('popup').style.display = 'block';
@@ -18,7 +22,7 @@ function openPopup() {
   function closePopup() {
     document.getElementById('popup').style.display = 'none';
   }
-  
+
 // Save file on button click
 saveBtn.addEventListener('click', () => {
     const file = fileInput.files[0];
