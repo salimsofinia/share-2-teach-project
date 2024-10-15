@@ -17,12 +17,6 @@ const FileSchema = mongoose.Schema(
       required: true,
       default: false,
     },
-    //comments from file moderation
-    comments: {
-      type: String,
-      required: false,
-      default: "File not yet validated",
-    },
     //metadata follows
     fileSize: {
       type: Number,
@@ -37,29 +31,22 @@ const FileSchema = mongoose.Schema(
       type: String,
       required: false,
     },
-    subject: {
-      type: String,
-      required: true,
-    },
-    grade: {
-      type: String,
-      required: true,
-    },
-    ratings: {
-      type: [Number],
-      require: false,
-      min: 0,
-      max: 5,
-    },
-    /*
     ratings: [
       {
-        type: Number,
-        required: false,
-        min: 0,
-        max: 5,
+        userEmail: {
+          //type: mongoose.Schema.Types.ObjectId,
+          type: String,
+          required: false,
+          //ref: "User",
+        },
+        rating: {
+          type: Number,
+          required: false,
+          min: 1,
+          max: 5,
+        },
       },
-    ],*/
+    ],
   },
   {
     timestamps: true,
