@@ -191,12 +191,94 @@ function displayDocuments() {
 }
 
 // Function to search documents
-function searchDocuments() {
+async function searchDocuments() {
   const query = prompt("Enter document name subject or grade to search:");
-  const filteredDocuments = documents.filter(
-    (document) => document.query.toLowerCase() === query.toLowerCase()
-  );
-  displayDocuments();
+  console.log(query);
+  let response = "";
+  if (query === "") {
+    response = await fetch("/api/file/" + query, {
+      method: "GET", // The HTTP method
+    });
+  } else {
+    response = await fetch("/api/file/search/" + query, {
+      method: "GET", // The HTTP method
+    });
+  }
+
+  // Check if the response status is OK (status code 200-299)
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+  const data = await response.json(); // Parse the response data
+  console.log(data);
+  const faqTableBody = document
+    .getElementById("fileTable")
+    .getElementsByTagName("tbody")[0];
+
+  faqTableBody.innerHTML = "";
+  let count = 0;
+  // Populate the table with the fetched data
+  data.forEach((file) => {
+    const row = faqTableBody.insertRow(); // Create a new row
+
+    // Create and insert cells into the row
+    const nameCell = row.insertCell(0);
+    const sizeCell = row.insertCell(1);
+    const subjectCell = row.insertCell(2);
+    const gradeCell = row.insertCell(3);
+    const scoreCell = row.insertCell(4);
+    const ratingCell = row.insertCell(5);
+    const downloadCell = row.insertCell(6);
+
+    const fileId = data[count]._id;
+    const fileName = data[count].fileName;
+    // Set the cell values
+    nameCell.textContent = data[count].fileName;
+    sizeCell.textContent =
+      (data[count].fileSize / (1024 * 1024)).toFixed(2) + " MB";
+    subjectCell.textContent = data[count].subject;
+    gradeCell.textContent = data[count].grade;
+    scoreCell.innerHTML = generateStaticStarRating(
+      calcAvgRating(file.ratings),
+      fileId
+    );
+    // Generate and set the clickable star rating
+    ratingCell.innerHTML = generateClickableStarRating(
+      calcAvgRating(file.ratings),
+      fileId
+    ); // Pass index for unique ID
+    // Set the innerHTML for the downloadCell with correct syntax
+    downloadCell.innerHTML = `<button type="button" id="${fileId}">Download</button>`;
+
+    // Retrieve the button element after it has been inserted into the DOM
+    const button = document.getElementById(fileId.toString());
+
+    // Check if the button exists before attaching the event listener
+    if (button) {
+      button.addEventListener("click", (event) => {
+        downloadButtonClick(event, fileId, fileName); // Call your download function
+      });
+    } else {
+      console.error(`Button with ID ${fileId} not found`);
+    }
+
+    console.log(data[count]._id);
+    const stars = ratingCell.querySelectorAll(".star");
+    stars.forEach((star) => {
+      star.addEventListener("mouseover", handleStarHover);
+      star.addEventListener("mouseout", handleStarMouseOut);
+      star.addEventListener("click", (event) => handleStarClick(event, fileId));
+    });
+
+    count++;
+  });
+
+  // Check if the response status is OK (status code 200-299)
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+
+  // displayDocuments();
 }
 
 // Function to search documents
