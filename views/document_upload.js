@@ -463,6 +463,28 @@ function init() {
   }
 }
 
+function initrest() {
+  const isLoggedIn = document.cookie.includes("isLoggedIn=true");
+  const isAdmin = document.cookie.includes("isAdmin=true");
+
+  if (isLoggedIn) {
+    const viewItems = document.querySelectorAll(".hide-when-logged-out");
+    viewItems.forEach((item) => {
+      item.style.display = "block";
+    });
+
+    document.body.classList.add("logged-in");
+
+    if (isAdmin) {
+      document.body.classList.add("logged-in-as-admin");
+      const adminItems = document.querySelectorAll(".hide-when-not-admin");
+      adminItems.forEach((item) => {
+        item.style.display = "block";
+      });
+    }
+  }
+}
+
 // Retrieve documents from database and display
 retrieveDocuments();
 displayDocuments();

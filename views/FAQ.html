@@ -25,7 +25,7 @@
       }
     </style>
   </head>
-  <body onload="popFaqTable(); init()">
+  <body onload="popFaqTable(); initrest()">
     <header>
       <nav>
         <ul>
@@ -38,12 +38,12 @@
             <a href="#" class="dropdown-toggle">Explore</a>
             <ul class="dropdown-menu">
               <li><a href="landing.html">Home</a></li>
-              <li><a href="account creation.html">Account creation</a></li>
-              <li><a href="password reset.html">Password Reset</a></li>
-              <li class="hide-when-logged-out">
+              <li class = "hide-when-not-admin"><a href="account creation.html">Account creation</a></li>
+              <li class="hide-when-logged-out"><a href="password reset.html">Password Reset</a></li>
+              <li>
                 <a href="subject view.html">Subject View </a>
               </li>
-              <li class="hide-when-logged-out">
+              <li>
                 <a href="Search.html">Search</a>
               </li>
               <li class="hide-when-logged-out">
@@ -53,18 +53,19 @@
                 <a href="Other usefull OER's.html">useful OER's</a>
               </li>
               <li class="hide-when-logged-out">
-                <a href="Contribute.html">Contributors</a>
+                <a href="Contributors.html">Contributors</a>
               </li>
               <li class="hide-when-logged-out">
                 <a href="Self-Directed Learning.html">Self-Directed Learning</a>
               </li>
-              <li class="hide-when-logged-out">
+              <li class="hide-when-not-admin">
                 <a href="Moderate.html">Moderate</a>
               </li>
               <li class="hide-when-logged-out">
                 <a href="Analytics.html">Analytics</a>
               </li>
-              <li class="hide-when-logged-out">
+              
+              <li class="hide-when-not-admin">
                 <a href="User Management.html">User Management</a>
               </li>
               <li><a href="About us.html">About us</a></li>
