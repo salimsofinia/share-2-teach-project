@@ -28,6 +28,7 @@ async function Login() {
     const loginPassword = document.getElementById("loginPassword"); // Correct ID for password input
 
     // Ensure both elements exist and have a value property
+
     if (!loginEmail || !loginPassword) {  
       throw new Error("Email or password field is missing in the DOM.");
     }
@@ -248,6 +249,36 @@ function generateStaticStarRating(avgRating, fileIndex) {
   return stars;
 }
 
+async function downloadButtonClick(event, fileID, fileName) {
+  const fileId = fileID; // Replace with your actual file ID
+  fetch(`/api/file/${fileId}`, {
+    method: "GET", // Make sure you are using the correct method
+  })
+    .then((response) => {
+      // Check if the response is OK (status 200-299)
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      // Get the response as a Blob for downloading
+      return response.blob();
+    })
+    .then((blob) => {
+      // Create a URL for the Blob
+      const url = window.URL.createObjectURL(blob);
+      // Create an anchor element to trigger the download
+      const a = document.createElement("a");
+      a.style.display = "none"; // Hide the anchor
+      a.href = url; // Set the Blob URL as href
+      a.download = fileName; // Set the desired file name
+      document.body.appendChild(a); // Append anchor to the body
+      a.click(); // Programmatically click the anchor to trigger the download
+      window.URL.revokeObjectURL(url); // Clean up
+    })
+    .catch((error) => {
+      console.error("Fetch error:", error);
+    });
+}
+
 function handleStarHover(event) {
   const rating = event.target.getAttribute("data-rating");
   const stars = event.target.parentElement.children;
@@ -336,6 +367,7 @@ async function popFileTable() {
     const downloadCell = row.insertCell(6);
 
     const fileId = data[count]._id;
+    const fileName = data[count].fileName;
     // Set the cell values
     nameCell.textContent = data[count].fileName;
     sizeCell.textContent =
@@ -351,6 +383,21 @@ async function popFileTable() {
       calcAvgRating(file.ratings),
       fileId
     ); // Pass index for unique ID
+    // Set the innerHTML for the downloadCell with correct syntax
+    downloadCell.innerHTML = `<button type="button" id="${fileId}">Download</button>`;
+
+    // Retrieve the button element after it has been inserted into the DOM
+    const button = document.getElementById(fileId.toString());
+
+    // Check if the button exists before attaching the event listener
+    if (button) {
+      button.addEventListener("click", (event) => {
+        downloadButtonClick(event, fileId, fileName); // Call your download function
+      });
+    } else {
+      console.error(`Button with ID ${fileId} not found`);
+    }
+
     console.log(data[count]._id);
     const stars = ratingCell.querySelectorAll(".star");
     stars.forEach((star) => {
@@ -364,13 +411,13 @@ async function popFileTable() {
 }
 
 async function popFaqTable() {
-  const response2 = await fetch("/api/faqs", {
+  const response = await fetch("/api/faqs", {
     method: "GET", // The HTTP method
   });
 
   // Check if the response status is OK (status code 200-299)
-  if (!response2.ok) {
-    throw new Error(`HTTP error! Status: ${response2.status}`);
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
   }
   const data = await response2.json(); // Parse the response data
 
