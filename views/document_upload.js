@@ -17,7 +17,9 @@ function handleFileChange(event) {
     // Update progress bar (optional)
     progressBar.value = 0;
 }
-
+function Login(){
+    
+}
 // Function to handle save button click
 function handleSave() {
     // Add save logic here (e.g., send file to server)
