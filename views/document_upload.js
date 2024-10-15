@@ -612,6 +612,33 @@ function initrest() {
   }
 }
 
+//code for watermark(later use)
+/*
+const addWatermarkToPdf = (pdfFile, watermarkImage) => {
+  // Create a new jsPDF instance
+  const pdf = new jsPDF();
+
+  // Add the original PDF pages
+  pdf.addImage(pdfFile, 'JPEG', 0, 0);
+
+  // Add the watermark image
+  pdf.addImage(watermarkImage, 'PNG', 100, 100, 100, 50, null, null, 0.5); // 50% opacity
+
+  // Save the watermarked PDF
+  const watermarkedPdf = pdf.output('blob');
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(watermarkedPdf);
+  link.download = 'watermarkedPdf.pdf';
+  link.click();
+};
+
+// Example usage:
+
+const pdfFile = 'path/to/your/pdf/file.pdf';
+const watermarkImage = 's2t.png';
+addWatermarkToPdf(pdfFile, watermarkImage);
+*/
+
 // Retrieve documents from database and display
 retrieveDocuments();
 displayDocuments();
