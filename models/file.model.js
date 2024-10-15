@@ -17,6 +17,11 @@ const FileSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    //comments from file moderation
+    comments: {
+      type: String,
+      required: false,
+    },
     //metadata follows
     fileSize: {
       type: Number,
@@ -31,22 +36,20 @@ const FileSchema = mongoose.Schema(
       type: String,
       required: false,
     },
-    ratings: [
-      {
-        userEmail: {
-          //type: mongoose.Schema.Types.ObjectId,
-          type: String,
-          required: false,
-          //ref: "User",
-        },
-        rating: {
-          type: Number,
-          required: false,
-          min: 1,
-          max: 5,
-        },
-      },
-    ],
+    subject: {
+      type: String,
+      required: true,
+    },
+    grade: {
+      type: String,
+      required: true,
+    },
+    ratings: {
+      type: [Number],
+      require: false,
+      min: 0,
+      max: 5,
+    },
   },
   {
     timestamps: true,
