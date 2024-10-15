@@ -13,7 +13,6 @@ const { Console, error } = require("console");
 const cookieParser = require("cookie-parser");
 const { collection } = require("./models/user.js");
 const User = require("./models/user.js");
-const Login = require("./authentication.js");
 const Report = require("./models/report.model.js");
 const UserAction = require("./models/user_actions.model.js");
 const Modhistory = require("./models/modhistory.js");
@@ -185,6 +184,7 @@ app.get("/api/faqs", async (req, res) => {
     const useraction = new UserAction({
       action: "Get FAQ",
     });
+    console.log(faq);
     useraction.save();
     res.status(200).json(faq);
   } catch (error) {
