@@ -28,8 +28,8 @@ async function Login() {
     const loginPassword = document.getElementById("loginPassword"); // Correct ID for password input
 
     // Ensure both elements exist and have a value property
-    if (!loginEmail || !loginPassword) {
-      showMessage("Pleae check that both fields are filled in.");
+
+    if (!loginEmail || !loginPassword) {  
       throw new Error("Email or password field is missing in the DOM.");
     }
 
@@ -65,14 +65,14 @@ async function Login() {
       const expires = new Date(Date.now() + 3600000).toUTCString(); //i hour
       document.cookie = "isLoggedIn=true; expires=${expires}";
       document.cookie = "isAdmin=true; expires=${expires}";
-      showMessage("Successfully logged in!");
+      alert("Welcome, you have been sucessfully logged in ");
       closePopup();
     }
   } catch (error) {
     console.error("Error logging in:", error);
     alert("Error logging in. Please try again.");
-    showMessage("could not log in please try again");
   }
+  location.reload();
 }
 // Function to handle save button click
 function handleSave() {
@@ -441,8 +441,76 @@ async function popFaqTable() {
     count++;
   });
 }
+function logout() {
+  // Hide logout button
+  const logoutBtn = document.getElementById("navlogout");
+  logoutBtn.style.display = "none";
 
+
+  // Set cookies to indicate logged-out state
+  document.cookie = "isLoggedIn=false";
+  document.cookie = "isAdmin=false";
+
+  // Optional: Remove any other authentication tokens or session data
+  
+  // Reload page
+  location.reload();
+  alert("You have been logged out.");
+  
+}
 function init() {
+  const logoutBtn = document.getElementById("navlogout");
+  logoutBtn.style.display = "none";
+  const isLoggedIn = document.cookie.includes("isLoggedIn=true");
+  const isAdmin = document.cookie.includes("isAdmin=true");
+
+  if (isLoggedIn) {
+    const logoutBtn = document.getElementById("navlogout");
+    logoutBtn.style.display = "block";
+    const viewItems = document.querySelectorAll(".hide-when-logged-out");
+    viewItems.forEach((item) => {
+      item.style.display = "block";
+    });
+  
+    const navlogin = document.getElementById("navlogin");
+    if (navlogin) {
+      navlogin.style.display = "none";
+    }
+  
+    document.body.classList.add("logged-in");
+  
+    if (isAdmin) {
+      const logoutBtn = document.getElementById("navlogout");
+      logoutBtn.style.display = "block";
+      document.body.classList.add("logged-in-as-admin");
+      const adminItems = document.querySelectorAll(".hide-when-not-admin");
+      adminItems.forEach((item) => {
+        item.style.display = "block";
+      });
+    }
+  } else {
+    // Optional: Handle logged-out state
+    const viewItems = document.querySelectorAll(".hide-when-logged-in");
+    viewItems.forEach((item) => {
+      item.style.display = "block";
+    });
+  
+    const navlogin = document.getElementById("navlogin");
+    if (navlogin) {
+      navlogin.style.display = "block";
+    }
+  
+    document.body.classList.remove("logged-in");
+    document.body.classList.remove("logged-in-as-admin");
+  
+    const adminItems = document.querySelectorAll(".hide-when-not-admin");
+    adminItems.forEach((item) => {
+      item.style.display = "none";
+    });
+  }
+}
+
+function initrest() {
   const isLoggedIn = document.cookie.includes("isLoggedIn=true");
   const isAdmin = document.cookie.includes("isAdmin=true");
 
