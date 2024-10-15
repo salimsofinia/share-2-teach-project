@@ -71,6 +71,7 @@ async function Login() {
     console.error("Error logging in:", error);
     alert("Error logging in. Please try again.");
   }
+  location.reload();
 }
 // Function to handle save button click
 function handleSave() {
@@ -393,26 +394,72 @@ async function popFaqTable() {
     count++;
   });
 }
+function logout() {
+  // Hide logout button
+  const logoutBtn = document.getElementById("navlogout");
+  logoutBtn.style.display = "none";
 
+
+  // Set cookies to indicate logged-out state
+  document.cookie = "isLoggedIn=false";
+  document.cookie = "isAdmin=false";
+
+  // Optional: Remove any other authentication tokens or session data
+  
+  // Reload page
+  location.reload();
+  alert("You have been logged out.");
+  
+}
 function init() {
+  const logoutBtn = document.getElementById("navlogout");
+  logoutBtn.style.display = "none";
   const isLoggedIn = document.cookie.includes("isLoggedIn=true");
   const isAdmin = document.cookie.includes("isAdmin=true");
 
   if (isLoggedIn) {
+    const logoutBtn = document.getElementById("navlogout");
+    logoutBtn.style.display = "block";
     const viewItems = document.querySelectorAll(".hide-when-logged-out");
     viewItems.forEach((item) => {
       item.style.display = "block";
     });
-
+  
+    const navlogin = document.getElementById("navlogin");
+    if (navlogin) {
+      navlogin.style.display = "none";
+    }
+  
     document.body.classList.add("logged-in");
-
+  
     if (isAdmin) {
+      const logoutBtn = document.getElementById("navlogout");
+      logoutBtn.style.display = "block";
       document.body.classList.add("logged-in-as-admin");
       const adminItems = document.querySelectorAll(".hide-when-not-admin");
       adminItems.forEach((item) => {
         item.style.display = "block";
       });
     }
+  } else {
+    // Optional: Handle logged-out state
+    const viewItems = document.querySelectorAll(".hide-when-logged-in");
+    viewItems.forEach((item) => {
+      item.style.display = "block";
+    });
+  
+    const navlogin = document.getElementById("navlogin");
+    if (navlogin) {
+      navlogin.style.display = "block";
+    }
+  
+    document.body.classList.remove("logged-in");
+    document.body.classList.remove("logged-in-as-admin");
+  
+    const adminItems = document.querySelectorAll(".hide-when-not-admin");
+    adminItems.forEach((item) => {
+      item.style.display = "none";
+    });
   }
 }
 
