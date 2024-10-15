@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<script src="document_upload.js"></script>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,7 +7,7 @@
     <title>Share2Teach</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body onload="retrieveDocuments(); displayDocuments()">
     <header>
         <nav>
             <ul>
@@ -20,10 +21,11 @@
             <div class="subbox">
                 <form>
                     <div class="buttons">
-                        <button type="submit">Search</button>
-
-                        <button type="reset">cancel</button>
+                        <button  type="button" onclick= searchDocuments()>Search</button>
+                        <button type="button" onclick="location.href='landing.html'">Cancel</button>
                     </div>
+                    <h2>Available Documents:</h2><br>
+                        <div id="document-list"></div>
                 </form>
             </div>
         </div>
