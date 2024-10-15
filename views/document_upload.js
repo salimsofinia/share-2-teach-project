@@ -29,7 +29,7 @@ async function Login() {
 
     // Ensure both elements exist and have a value property
 
-    if (!loginEmail || !loginPassword) {  
+    if (!loginEmail || !loginPassword) {
       throw new Error("Email or password field is missing in the DOM.");
     }
 
@@ -419,7 +419,7 @@ async function popFaqTable() {
   if (!response.ok) {
     throw new Error(`HTTP error! Status: ${response.status}`);
   }
-  const data = await response2.json(); // Parse the response data
+  const data = await response.json(); // Parse the response data
 
   const faqTableBody = document
     .getElementById("faqTable")
@@ -446,17 +446,15 @@ function logout() {
   const logoutBtn = document.getElementById("navlogout");
   logoutBtn.style.display = "none";
 
-
   // Set cookies to indicate logged-out state
   document.cookie = "isLoggedIn=false";
   document.cookie = "isAdmin=false";
 
   // Optional: Remove any other authentication tokens or session data
-  
+
   // Reload page
   location.reload();
   alert("You have been logged out.");
-  
 }
 function init() {
   const logoutBtn = document.getElementById("navlogout");
@@ -471,14 +469,14 @@ function init() {
     viewItems.forEach((item) => {
       item.style.display = "block";
     });
-  
+
     const navlogin = document.getElementById("navlogin");
     if (navlogin) {
       navlogin.style.display = "none";
     }
-  
+
     document.body.classList.add("logged-in");
-  
+
     if (isAdmin) {
       const logoutBtn = document.getElementById("navlogout");
       logoutBtn.style.display = "block";
@@ -494,15 +492,15 @@ function init() {
     viewItems.forEach((item) => {
       item.style.display = "block";
     });
-  
+
     const navlogin = document.getElementById("navlogin");
     if (navlogin) {
       navlogin.style.display = "block";
     }
-  
+
     document.body.classList.remove("logged-in");
     document.body.classList.remove("logged-in-as-admin");
-  
+
     const adminItems = document.querySelectorAll(".hide-when-not-admin");
     adminItems.forEach((item) => {
       item.style.display = "none";
