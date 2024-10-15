@@ -4,8 +4,10 @@ const fileName = document.getElementById('document-name');
 const progressBar = document.getElementById('progress-bar');
 const saveBtn = document.getElementById('save-btn');
 const cancelBtn = document.getElementById('cancel-btn');
+const logid = document.getElementById('logid');
 
 // Add event listeners
+
 fileInput.addEventListener('change', handleFileChange);
 saveBtn.addEventListener('click', handleSave);
 cancelBtn.addEventListener('click', handleCancel);
@@ -18,7 +20,7 @@ function handleFileChange(event) {
     progressBar.value = 0;
 }
 function Login(){
-    
+    console.log('login loading');
 }
 // Function to handle save button click
 function handleSave() {
@@ -61,6 +63,7 @@ function openPopup() {
 // Function to close popup
 function closePopup() {
     document.getElementById('popup').style.display = 'none';
+    console.log('pop-up closed');
 }
 
 // Add event listener to open popup
