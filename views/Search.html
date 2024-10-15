@@ -1,38 +1,77 @@
 <!DOCTYPE html>
 <script src="document_upload.js"></script>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Share2Teach</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body onload="retrieveDocuments(); displayDocuments()">
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Add styles for the datagrid */
+      .datagrid {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      .datagrid th,
+      .datagrid td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+      }
+
+      .datagrid th {
+        background-color: #3c1361;
+      }
+    </style>
+  </head>
+  <body onload="popFileTable()">
     <header>
-        <nav>
-            <ul>
-                <li><a href="landing.html" class="logo"><img src="logo.jpg" alt="NWU LOGO" width="25%" align="left"></a></li>
-            </ul>
-        </nav>
+      <nav>
+        <ul>
+          <li>
+            <a href="landing.html" class="logo"
+              ><img src="logo.jpg" alt="NWU LOGO" width="25%" align="left"
+            /></a>
+          </li>
+        </ul>
+      </nav>
     </header>
     <main>
-        <div class="regbox">
-            <h1>Search for documents</h1>
-            <div class="subbox">
-                <form>
-                    <div class="buttons">
-                        <button  type="button" onclick= searchDocuments()>Search</button>
-                        <button type="button" onclick="location.href='landing.html'">Cancel</button>
-                    </div>
-                    <h2>Available Documents:</h2><br>
-                        <div id="document-list"></div>
-                </form>
+      <div class="regbox">
+        <h1>Search for documents</h1>
+        <div class="subbox">
+          <form>
+            <div class="buttons">
+              <button type="button" onclick="searchDocuments()">Search</button>
+              <button type="button" onclick="location.href='landing.html'">
+                Cancel
+              </button>
             </div>
+            <h2>Available Documents:</h2>
+            <br />
+            <table class="datagrid" id="fileTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Size</th>
+                  <th>Subject</th>
+                  <th>Grade</th>
+                  <th>File Rating</th>
+                  <th>Your Rating</th>
+                  <th>Download</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Sample data -->
+              </tbody>
+            </table>
+          </form>
         </div>
-
+      </div>
     </main>
     <footer>
-        <p>&copy; 2024 Share 2 Teach</p>
+      <p>&copy; 2024 Share 2 Teach</p>
     </footer>
-</body>
+  </body>
 </html>
