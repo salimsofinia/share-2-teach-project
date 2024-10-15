@@ -28,7 +28,9 @@ async function Login() {
 
     // Ensure both elements exist and have a value property
     if (!loginEmail || !loginPassword) {
-      throw new Error("Email or password field is missing in the DOM.");
+        showMessage("Pleae check that both fields are filled in.");
+        throw new Error("Email or password field is missing in the DOM.");
+      
     }
 
     const requestData = {
@@ -63,10 +65,13 @@ async function Login() {
       const expires = new Date(Date.now() + 3600000).toUTCString(); //i hour
       document.cookie = "isLoggedIn=true; expires=${expires}";
       document.cookie = "isAdmin=true; expires=${expires}";
+      showMessage("Successfully logged in!");
+      closePopup();
     }
   } catch (error) {
     console.error("Error logging in:", error);
     alert("Error logging in. Please try again.");
+    showMessage("could not log in please try again");
   }
 }
 // Function to handle save button click
