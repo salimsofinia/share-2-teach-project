@@ -11,9 +11,10 @@ const userSchema = new mongoose.Schema({
   },
   affiliation: {
     type: String,
-    required: [true, "Affiliation cannot be blank"],
+    required: false,
   },
-  credential: { type: String, required: [true, "Credential cannot be blank"] },
+  credential: { type: String, required: false },
+  role: { type: String, required: [true, "Role cannot be blank"] },
   password: { type: String, required: [true, "Password cannot be blank"] },
 });
 

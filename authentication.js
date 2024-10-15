@@ -147,7 +147,7 @@
 // app.listen(3000, () => {
 //   console.log("Server running on port 3000!");
 // });
-
+/*
 const express = require("express");
 const mongoose = require("mongoose");
 const session = require("express-session");
@@ -260,7 +260,7 @@ app.post("/registerrole", requireLogin, async (req, res) => {
     console.log(error.message);
   }
 });*/
-
+/*
 //if token exists in cookies then user is logged in
 app.get("/login", (req, res) => {
   if (req.cookies.accessToken) {
@@ -470,7 +470,6 @@ app.post("/api/login", async (req, res) => {
   } catch (error) {
     res.status(500).json(error.message);
     console.log(error.message);
-
   }
 });
 
@@ -503,7 +502,6 @@ app.post("/logout", (req, res) => {
 app.listen(3000, () => {
   console.log("Server running on port 3000!");
 });
-
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -1106,4 +1104,3 @@ app.post(
 );
 
 module.exports = app;
-
