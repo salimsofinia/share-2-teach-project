@@ -52,6 +52,18 @@ async function Login() {
 
     const data = await response.json(); // Parse the response data
     console.log(data);
+    const userRole = data.role;
+    if (userRole == "Admin") {
+      const isLoggedIn = true;
+      const viewItems = document.querySelectorAll(".hide-when-logged-out"); // Select nav items
+
+      viewItems.forEach((item) => {
+        item.style.display = isLoggedIn ? "list-item" : "none"; // Show or hide based on login state
+      });
+      const expires = new Date(Date.now() + 3600000).toUTCString(); //i hour
+      document.cookie = "isLoggedIn=true; expires=${expires}";
+      document.cookie = "isAdmin=true; expires=${expires}";
+    }
   } catch (error) {
     console.error("Error logging in:", error);
     alert("Error logging in. Please try again.");
@@ -189,6 +201,29 @@ function searchDocumentsbysubject() {
     (document) => document.subject.toLowerCase() === subject.toLowerCase()
   );
   displayDocuments();
+}
+function init() {
+  console.log("fokfofkfofkofkf");
+
+  const isLoggedIn = document.cookie.includes("isLoggedIn=true");
+  const isAdmin = document.cookie.includes("isAdmin=true");
+
+  if (isLoggedIn) {
+    const viewItems = document.querySelectorAll(".hide-when-logged-out");
+    viewItems.forEach((item) => {
+      item.style.display = "block";
+    });
+
+    document.body.classList.add("logged-in");
+
+    if (isAdmin) {
+      document.body.classList.add("logged-in-as-admin");
+      const adminItems = document.querySelectorAll(".hide-when-not-admin");
+      adminItems.forEach((item) => {
+        item.style.display = "block";
+      });
+    }
+  }
 }
 
 // Retrieve documents from database and display
