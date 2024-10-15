@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<script src="document_upload.js"></script>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share2Teach</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="landing.html" class="logo"><img src="logo.jpg" alt="NWU LOGO" width="25%" align="left"></a></li>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle">Explore</a>
+                    <ul class="dropdown-menu">
+                        <li><button onclick="openPopup()">Log in</button></li>
+                        <li><a href="account creation.html">Account creation</a></li>
+                        <li><a href="password reset.html">Password Reset</a></li>
+                        <li class="hide-when-logged-out"><a href="subject view.html">Subject View </a></li>
+                        <li class="hide-when-logged-out"><a href="Search.html">Search</a></li>
+                        <li class="hide-when-logged-out"><a href="Contribute.html">Contribute </a></li>
+                        <li class="hide-when-logged-out"><a href="Other usefull OER's.html">useful OER's</a></li>
+                        <li class="hide-when-logged-out"><a href="Contributors.html">Contributors</a></li>
+                        <li class="hide-when-logged-out"><a href="Self-Directed Learning.html">Self-Directed Learning</a></li>
+                        <li class="hide-when-not-admin"><a href="Moderate.html">Moderate</a></li>
+                        <li class="hide-when-logged-out"><a href="Analytics.html">Analytics</a></li>
+                        <li><a href="FAQ.html">FAQ</a></li>
+                        <li class="hide-when-not-admin"><a href="User Management.html">User Management</a></li>
+                        <li><a href="About us.html">About us</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <div class="popup" id="popup">
+        <div class="popup-content">
+          <label>E-Mail:</label>
+          <input type="text" id="loginE-mail"><br><br>
+          <label>Password:</label>
+          <input type="text" id="loginPassword"><br><br>
+          <button onclick="Login()">Log in</button>
+          <button onclick="closePopup()">Close</button>
+        </div>
+      </div>
+    <section>
+        <a href="About us.html" class="logo"><img src="s2t.png" alt="Share 2 Teach Logo" width="10%" align="centre"></a>
+        <h1>Welcome to Share 2 Teach</h1>
+        <p>Open Educational Recources</p>
+    </section>
+    <footer>
+        <p>&copy; 2024 Share 2 Teach</p>
+    </footer>
+</body>
+</html>
