@@ -81,19 +81,26 @@ header nav ul li:hover {
     top: 100%;
     left: 0;
     background-color: #23252e;
-    padding: 10px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     display: none;
+    z-index: 1001; 
+    overflow-y: auto; 
+    max-height: 500px; /* Optional: Set a maximum height */
+    overflow-x: hidden; /* Hide horizontal scrollbar */
+    
+    
 }
 
 .dropdown-menu li {
     margin-bottom: 10px;
     transition: all 0.3s ease;
+    width: 100%; 
 }
 
 .dropdown-menu li:hover {
     background-color: #333;
+    color: #fff; 
 }
 
 .dropdown-menu li a {
@@ -106,6 +113,24 @@ header nav ul li:hover {
     display: block;
 }
 
+.dropdown-toggle::after {
+    content: "\25BC"; /* Unicode for downward triangle */
+    font-size: 12px;
+    margin-left: 5px;
+}
+/*appearance of scrollbar*/
+.dropdown-menu::-webkit-scrollbar {
+    width: 8px; /* Vertical scrollbar width */
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+    background-color: #8a0ffb; /* Neon purple */
+    border-radius: 5px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+    background-color: #333; /* Dark background */
+}
 /* Typography */
 
 main h1,
@@ -278,14 +303,32 @@ button:hover {
 }
 
 #progress-bar {
-    width: 50%;
-    height: 50px;
+    width: 100%;
+    height: 20px;
     margin-top: 10px;
-    background-color: #333;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: #333; /* Set background color for non-webkit browsers */
 }
 
+#progress-bar::-webkit-progress-bar {
+    background-color: #333;
+}
+
+#progress-bar::-webkit-progress-value {
+    background-color: #8a0ffb; /* Neon purple */
+}
+
+/* Add styles for non-webkit browsers (Firefox, Edge, etc.) */
+#progress-bar::-moz-progress-bar {
+    background-color: #8a0ffb; /* Neon purple */
+}
+
+#progress-bar::-ms-fill {
+    background-color: #8a0ffb; /* Neon purple */
+}
 /* Popup Styles */
 
 .popup {
@@ -295,7 +338,7 @@ button:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
 .popup-content {

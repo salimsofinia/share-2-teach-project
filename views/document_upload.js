@@ -1,13 +1,51 @@
+// Get elements
 const fileInput = document.getElementById('document-upload');
-const documentName = document.getElementById('document-name');
-const saveBtn = document.getElementById('save-btn');
+const fileName = document.getElementById('document-name');
 const progressBar = document.getElementById('progress-bar');
+const saveBtn = document.getElementById('save-btn');
+const cancelBtn = document.getElementById('cancel-btn');
 
-// Update document name on file selection
-fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    documentName.innerText = file.name;
-});
+// Add event listeners
+fileInput.addEventListener('change', handleFileChange);
+saveBtn.addEventListener('click', handleSave);
+cancelBtn.addEventListener('click', handleCancel);
+
+// Function to handle file change
+function handleFileChange(event) {
+    const file = event.target.files[0];
+    fileName.textContent = file.name;
+    // Update progress bar (optional)
+    progressBar.value = 0;
+}
+
+// Function to handle save button click
+function handleSave() {
+    // Add save logic here (e.g., send file to server)
+    let progress = 0;
+    const intervalId = setInterval(() => {
+        progress += 20; // 100% / 5s = 20% per second
+        progressBar.value = progress;
+        progressText.textContent = `${progress}%`;
+
+        if (progress >= 100) {
+            clearInterval(intervalId);
+            console.log('Upload complete!');
+            // Reset file input after upload completion
+            fileInput.value = '';
+            fileName.textContent = '';
+        }
+    }, 1000); // 1000ms = 1 second
+
+    console.log('File upload started...');
+}
+
+// Function to handle cancel button click
+function handleCancel() {
+    // Reset file input
+    fileInput.value = '';
+    fileName.textContent = '';
+    progressBar.value = 0;
+}
 
 function updateMenuVisibility() {
     document.body.classList.toggle('logged-in', false); // Define isLoggedIn variable
