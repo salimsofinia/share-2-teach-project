@@ -505,7 +505,9 @@ function requireLogin(req, res, next) {
     console.log(error.message);
   }
 }
-
+app.get("/", (req, res) => {
+  res.redirect("/landing.html");
+});
 //What is role text box if credential already exists?
 
 //if token exists in cookies then user is logged in
@@ -561,7 +563,10 @@ app.post("/api/login", async (req, res) => {
         action: "Login",
       });
       useraction.save();
-      res.status(200).json({ message: "User logged in successfully" });
+      return res.status(200).json({
+        message: "User logged in successfully",
+        role: foundUser.role,
+      });
     } else {
       res
         .status(401)
