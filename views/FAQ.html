@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<script src="document_upload.js"></script>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Share2Teach</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Add styles for the datagrid */
+      .datagrid {
+        border-collapse: collapse;
+        width: 100%;
+      }
+
+      .datagrid th,
+      .datagrid td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+      }
+
+      .datagrid th {
+        background-color: #3c1361;
+      }
+    </style>
+  </head>
+  <body onload="popFaqTable(); init()">
+    <header>
+      <nav>
+        <ul>
+          <li>
+            <a href="landing.html" class="logo"
+              ><img src="logo.jpg" alt="NWU LOGO" width="25%" align="left"
+            /></a>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle">Explore</a>
+            <ul class="dropdown-menu">
+              <li><a href="landing.html">Home</a></li>
+              <li><a href="account creation.html">Account creation</a></li>
+              <li><a href="password reset.html">Password Reset</a></li>
+              <li class="hide-when-logged-out">
+                <a href="subject view.html">Subject View </a>
+              </li>
+              <li class="hide-when-logged-out">
+                <a href="Search.html">Search</a>
+              </li>
+              <li class="hide-when-logged-out">
+                <a href="Contribute.html">Contribute </a>
+              </li>
+              <li class="hide-when-logged-out">
+                <a href="Other usefull OER's.html">useful OER's</a>
+              </li>
+              <li class="hide-when-logged-out">
+                <a href="Contribute.html">Contributors</a>
+              </li>
+              <li class="hide-when-logged-out">
+                <a href="Self-Directed Learning.html">Self-Directed Learning</a>
+              </li>
+              <li class="hide-when-logged-out">
+                <a href="Moderate.html">Moderate</a>
+              </li>
+              <li class="hide-when-logged-out">
+                <a href="Analytics.html">Analytics</a>
+              </li>
+              <li class="hide-when-logged-out">
+                <a href="User Management.html">User Management</a>
+              </li>
+              <li><a href="About us.html">About us</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <div class="regbox">
+        <h1>Frequently Asked Questions:</h1>
+        <div class="subbox">
+          <table class="datagrid" id="faqTable">
+            <thead>
+              <tr>
+                <th>Question</th>
+                <th>Answer</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Sample data -->
+              <tr>
+                <td>What is Share2Teach?</td>
+                <td>A platform for sharing educational resources.</td>
+              </tr>
+              <tr>
+                <td>How do I contribute?</td>
+                <td>Visit the Contribute page and follow the guidelines.</td>
+              </tr>
+              <tr>
+                <td>What type of resources are available?</td>
+                <td>Textbooks, videos, articles, and more.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+    <footer>
+      <p>&copy; 2024 Share 2 Teach</p>
+    </footer>
+  </body>
+</html>
