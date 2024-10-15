@@ -451,6 +451,7 @@ const { collection } = require("./models/user.js");
 const User = require("./models/user.js");
 const Report = require("./models/report.model.js");
 const Modhistory = require("./models/modhistory.js");
+const axios = require("axios");
 require("dotenv").config();
 
 mongoose
@@ -846,16 +847,48 @@ app.get("/api/file/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const file = await File.findById(id);
-    const useraction = new UserAction({
-      action: "Get File",
+
+    // If file not found in the database
+    if (!file) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    // Fetch the resource details from Cloudinary
+    const result = await Cloudinary.cloudinary.api.resource(file.fileName, {
+      resource_type: "raw",
     });
-    useraction.save();
-    res.status(200).json(file);
+
+    const fileUrl = result.secure_url; // Get the secure URL for the file
+
+    // Use Axios to get the file
+    const response = await axios.get(fileUrl, {
+      responseType: "stream", // Important to get the file as a stream
+    });
+
+    // Set headers to force download
+    res.set({
+      "Content-Disposition": `attachment; filename="${file.fileName}"`, // Set filename here
+      "Content-Type": file.fileType || "application/octet-stream", // Set the correct content type
+    });
+
+    // Pipe the response data to the client
+    response.data.pipe(res);
+
+    // Handle stream end
+    response.data.on("end", () => {
+      console.log("File stream finished");
+    });
+
+    // Handle stream errors
+    response.data.on("error", (err) => {
+      console.error("Stream error:", err);
+      res.status(500).json({ message: "Error reading file" });
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Error in /api/file/:id route:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
-
 //function to calculate average rating score
 function calcAvgRating(ratings) {
   console.log(ratings);
