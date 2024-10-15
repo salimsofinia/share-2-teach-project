@@ -436,11 +436,13 @@ const session = require("express-session");
 const bcrypt = require("bcrypt");
 const User = require("./models/user");
 const jwt = require("jsonwebtoken");
+const path = require("path");
 const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const routes = require("./mongodb.js");
 const UserAction = require("./models/user_actions.model.js");
 const app = express();
+const cors = require("cors");
 //app.set("view engine", "ejs");
 //app.set("views", "views");
 
@@ -466,7 +468,8 @@ app.use(
 );
 app.use(express.json());
 app.use(cookieParser());
-
+app.use(cors());
+app.use(express.static(path.join(__dirname, "views")));
 //function that runs as middleware in requests
 function requireLogin(req, res, next) {
   try {
