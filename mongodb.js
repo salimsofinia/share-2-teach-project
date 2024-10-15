@@ -16,6 +16,7 @@ const User = require("./models/user.js");
 const Login = require("./authentication.js");
 const Report = require("./models/report.model.js");
 const UserAction = require("./models/user_actions.model.js");
+const Modhistory = require("./models/modhistory.js");
 require("dotenv").config();
 
 // JWT Authentication Middleware
@@ -201,6 +202,27 @@ app.get("/api/faq/:id", async (req, res) => {
   }
 });
 
+app.post("/api/faq", async (req, res) => {
+  try {
+    const { question, answer } = req.body;
+    const faqAdd = new Faq({ question, answer });
+    await faqAdd.save();
+    res.status(200).json({ message: "Faq added: ", faqAdd });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.delete("/api/faq/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const delFaq = await Faq.findByIdAndDelete(id);
+    res.status(200).json({ message: "Faq deleted successfully", delFaq });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 //files
 //show all files
 app.get("/api/file", async (req, res) => {
@@ -333,45 +355,70 @@ app.get("/api/file/search/:query", async (req, res) => {
   }
 });
 
-//admin will update validation to true after approving file or false when unapproving file
-//if true will get set to false, if false will get set to true
+//admin will update validation to true after approving file or false when unapproving file and add moderator's comments
 app.put("/api/file/:id", authenticateJWT, async (req, res) => {
   try {
     if (req.user.role === "Admin" || req.user.role === "Moderator") {
       const { id } = req.params;
       const { validation, comments } = req.body;
+      //for moderation history purposes
+      const oldFile = await File.findById(id);
+      if (oldFile) {
+        const valUpdate = validation;
 
-      //const fileUpdate = await File.findById(id);
-      const valUpdate = validation;
+        const file = await File.findByIdAndUpdate(
+          id,
+          { Validation: valUpdate, comments: comments },
+          { new: true, runValidators: true }
+        ).then((updatedFile) => {
+          if (!updatedFile) {
+            console.log(error.message);
+            res.status(404).json({ message: "Resource not found" });
+          } else {
+            console.log("File moderated: ", updatedFile);
+            const modhistory = new Modhistory({
+              moderator: req.user.email,
+              fileName: oldFile.fileName,
+              oldValidation: oldFile.Validation,
+              oldComments: oldFile.comments,
+              newValidation: validation,
+              newComments: comments,
+            });
+            modhistory.save();
 
-      const file = await File.findByIdAndUpdate(
-        id,
-        { Validation: valUpdate, comments: comments },
-        { new: true, runValidators: true }
-      ).then((updatedFile) => {
-        if (!updatedFile) {
-          console.log(error.message);
-          res.status(404).json({ message: "Resource not found" });
-        } else {
-          console.log("File moderated: ", updatedFile);
-          const useraction = new UserAction({
-            action: "File Moderate",
-          });
-          useraction.save();
-          res.status(200).json(updatedFile);
-        }
-      });
+            const useraction = new UserAction({
+              action: "File Moderate",
+            });
+            useraction.save();
+            res.status(200).json(updatedFile);
+          }
+        });
+      } else {
+        res.status(403).json({
+          message:
+            "Invalid Credential: Only Admins may validate or invalidate files",
+        });
+      }
     } else {
-      res.status(403).json({
-        message:
-          "Invalid Credential: Only Admins may validate or invalidate files",
-      });
+      console.log(error.message);
+      res.status(404).json({ message: "Resource not found" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
+//show moderation history
+app.get("/api/modhistory", async (req, res) => {
+  try {
+    const modHistory = await Modhistory.find({});
+    res.status(200).json({ modHistory });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//show all reports
 app.get("/api/report", async (req, res) => {
   try {
     const reports = await Report.find({});
@@ -541,6 +588,12 @@ app.post(
               );
             } else {
               console.log("File already exists: ", result);
+              //remove file that is stored locally
+              fs.unlink(filePath, (error) => {
+                if (error) {
+                  console.log(error.message);
+                }
+              });
               res.status(404).json({
                 message: "File already exists, rename the file and try again: ",
                 result,
