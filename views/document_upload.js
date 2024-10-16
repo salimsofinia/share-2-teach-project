@@ -426,87 +426,169 @@ async function handleStarClick(event, fileIndex) {
     console.error("Error updating rating:", error);
   }
 }
-/*
-async function modifyButtonClick(event, fileID, fileName) {
-  const fileId = fileID; // Replace with your actual file ID
-  fetch(`/api/file/${fileId}`, {
-    method: "GET", // Make sure you are using the correct method
-  })
-    .then((response) => {
-      // Check if the response is OK (status 200-299)
+////////////////////////////////////////////////////////////////////////////////
+// Modify Button Click Handler
+async function modifyButtonClick(event, userID, currentRole) {
+  const modal = document.createElement('div');
+  modal.style.position = 'fixed';
+  modal.style.top = '50%';
+  modal.style.left = '50%';
+  modal.style.transform = 'translate(-50%, -50%)';
+  modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+  modal.style.padding = '20px';
+  modal.style.border = '1px solid #ddd';
+  modal.style.borderRadius = '10px';
+  modal.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
+  modal.innerHTML = `
+    <h2>Update Role</h2>
+    <label>Choose new role:</label>
+    <br>
+    <input type="radio" id="admin" name="role" value="Admin">
+    <label for="admin">Admin</label>
+    <br>
+    <input type="radio" id="moderator" name="role" value="Moderator">
+    <label for="moderator">Moderator</label>
+    <br>
+    <input type="radio" id="educator" name="role" value="Educator">
+    <label for="educator">Educator</label>
+    <br>
+    <button id="ok-btn">OK</button>
+    <button id="cancel-btn">Cancel</button>
+  `;
+
+  const overlay = document.createElement('div');
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+  document.body.appendChild(overlay);
+
+  document.body.appendChild(modal);
+
+  const okBtn = modal.querySelector('#ok-btn');
+  const cancelBtn = modal.querySelector('#cancel-btn');
+
+  okBtn.addEventListener('click', async () => {
+    const radios = modal.querySelectorAll('input[name="role"]');
+    let newRole;
+
+    for (const radio of radios) {
+      if (radio.checked) {
+        newRole = radio.value;
+        break;
+      }
+    }
+
+    if (!newRole) {
+      alert('Please select a role.');
+      return;
+    }
+
+    // Define the updated user data
+    const updatedData = {
+      role: newRole,
+    };
+
+    // Define the API endpoint URL
+    const apiEndpoint = `/api/user/${userID}`;
+
+    // Fetch the authentication token from local storage or cookie
+    const token = localStorage.getItem('token') || document.cookie.split('=')[1];
+
+    // Set the authentication token in the headers
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      // Send a PUT request to update the user role
+      const response = await fetch(apiEndpoint, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify(updatedData),
+      });
+
+      // Check if the response status is OK (status code 200-299)
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      // Get the response as a Blob for downloading
-      return response.blob();
-    })
-    .then((blob) => {
-      // Create a URL for the Blob
-      const url = window.URL.createObjectURL(blob);
-      // Create an anchor element to trigger the download
-      const a = document.createElement("a");
-      a.style.display = "none"; // Hide the anchor
-      a.href = url; // Set the Blob URL as href
-      a.download = fileName; // Set the desired file name
-      document.body.appendChild(a); // Append anchor to the body
-      a.click(); // Programmatically click the anchor to trigger the download
-      window.URL.revokeObjectURL(url); // Clean up
-    })
-    .catch((error) => {
-      console.error("Fetch error:", error);
-    });
-}
-*/
-async function popUserTable() {
-  const response = await fetch("/api/users", {
-    method: "GET", // The HTTP method
+
+      // Parse the response data
+      const data = await response.json();
+
+      // Update the user table
+      await popUserTable();
+
+      // Display a success message
+      alert(`Role updated successfully for user with ID ${userID}.`);
+
+      // Remove the modal and overlay
+      modal.remove();
+      overlay.remove();
+    } catch (error) {
+      // Display an error message
+      alert(`Error updating role: ${error.message}`);
+
+      // Remove the modal and overlay
+      modal.remove();
+      overlay.remove();
+    }
   });
 
-  // Check if the response status is OK (status code 200-299)
+  cancelBtn.addEventListener('click', () => {
+    // Remove the modal and overlay
+    modal.remove();
+    overlay.remove();
+  });
+}
+////////////////////////////////////////////////////////////////////////////////
+// Populate User Table
+async function popUserTable() {
+  const response = await fetch("/api/users", {
+    method: "GET", 
+  });
+
   if (!response.ok) {
     throw new Error(`HTTP error! Status: ${response.status}`);
   }
-  const data = await response.json(); // Parse the response data
+
+  const data = await response.json(); 
   console.log(data);
-  const usertablebody = document
-    .getElementById("userTable")
-    .getElementsByTagName("tbody")[0];
+  const userTableBody = document.getElementById("userTable").getElementsByTagName("tbody")[0];
 
-    usertablebody.innerHTML = "";
-  let count = 0;
-  // Populate the table with the fetched data
+  userTableBody.innerHTML = "";
+  
   data.forEach((user) => {
-    const row = usertablebody.insertRow(); // Create a new row
+    const row = userTableBody.insertRow(); 
 
-    // Create and insert cells into the row
     const nameCell = row.insertCell(0);
     const surnameCell = row.insertCell(1);
     const emailCell = row.insertCell(2);
-    const RoleCell = row.insertCell(3);
-    const ModifyCell = row.insertCell(4);
+    const roleCell = row.insertCell(3);
+    const modifyCell = row.insertCell(4);
 
-    const userId = data[count]._id;
-    const FirstName = data[count].firstname;
-    // Set the cell values
-    nameCell.textContent = data[count].firstname;
-    surnameCell.textContent = data[count].lastname;
-    emailCell.textContent = data[count].email;
-    RoleCell.textContent = data[count].role;
-    
-    
-  
-    ModifyCell.innerHTML = `<button type="button" id="${userId}">Modify</button>`;
-    const button = document.getElementById(userId.toString());
+    const userID = user._id;
+
+    nameCell.textContent = user.firstname;
+    surnameCell.textContent = user.lastname;
+    emailCell.textContent = user.email;
+    roleCell.textContent = user.role;
+
+    modifyCell.innerHTML = `<button type="button" id="${userID}">Modify</button>`;
+    const button = document.getElementById(userID.toString());
+
     if (button) {
       button.addEventListener("click", (event) => {
-        modifyButtonClick(event, userId, FirstName); // Call your download function
+        modifyButtonClick(event, userID, user.role); 
       });
     } else {
-      console.error(`Button with ID ${userId} not found`);
+      console.error(`Button with ID ${userID} not found`);
     }
 
-    console.log(data[count]._id);
-    count++;
+    console.log(user._id);
   });
 }
 ////////////////////////////////////////////////////////////////////////////////
