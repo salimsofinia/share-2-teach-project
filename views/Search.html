@@ -37,17 +37,68 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle">Explore</a>
             <ul class="dropdown-menu">
-                <li><a href="landing.html">Home</a></li>
-                <li class="hide-when-logged-out">
-                    <a href="Contribute.html">Contribute </a>
-                </li>
-                <li><a href="FAQ.html">FAQ</a></li>
+              <li><a href="landing.html">Home</a></li>
+              <li class="hide-when-logged-out">
+                <a href="Contribute.html">Contribute </a>
+              </li>
+              <li><a href="FAQ.html">FAQ</a></li>
             </ul>
-        </li>
+          </li>
         </ul>
       </nav>
     </header>
     <main>
+      <div class="popup" id="popup">
+        <div class="popup-content">
+          <form>
+            <p>Select reasons for reporting this file:</p>
+            <br />
+            <input
+              type="checkbox"
+              id="inaccurate"
+              name="reportReason"
+              value="inaccurate"
+            />
+            <label for="inaccurate">Inaccurate</label><br />
+
+            <input
+              type="checkbox"
+              id="irrelevant"
+              name="reportReason"
+              value="irrelevant"
+            />
+            <label for="irrelevant">Irrelevant content</label><br />
+
+            <input
+              type="checkbox"
+              id="offensive"
+              name="reportReason"
+              value="offensive"
+            />
+            <label for="offensive">Offensive material</label><br />
+
+            <input
+              type="checkbox"
+              id="outdated"
+              name="reportReason"
+              value="outdated"
+            />
+            <label for="outdated">Outdated information</label><br />
+
+            <input
+              type="checkbox"
+              id="other"
+              name="reportReason"
+              value="other"
+            />
+            <label for="other">Other</label><br /><br />
+
+            <button type="button" onclick="submitReport()">Report</button>
+            <button onclick="closePopup()">Cancel</button>
+          </form>
+        </div>
+      </div>
+
       <div class="regbox">
         <h1>Search for documents</h1>
         <div class="subbox">
@@ -57,7 +108,6 @@
               <button type="button" onclick="location.href='landing.html'">
                 Cancel
               </button>
-
             </div>
             <h2>Available Documents:</h2>
             <br />
@@ -71,6 +121,7 @@
                   <th>File Rating</th>
                   <th>Your Rating</th>
                   <th>Download</th>
+                  <th>Report</th>
                 </tr>
               </thead>
               <tbody>

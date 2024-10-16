@@ -1,3 +1,8 @@
+//global
+let fileReportId = "";
+let fileReportName = "";
+let fileSelectedUpload = "";
+
 const { name } = require("ejs");
 const { response } = require("../authentication");
 
@@ -16,8 +21,6 @@ cancelBtn.addEventListener("click", handleCancel);
 saveBtn.addEventListener("click", (event) => {
   console.log("Hello i am pressing the save buttoin"); // Call your download function
 });
-
-let fileSelectedUpload = "";
 
 // Function to handle file change
 function handleFileChange(event) {
@@ -204,10 +207,8 @@ async function searchDocuments() {
   const query = prompt("Enter document name subject or grade to search:");
   console.log(query);
   let response = "";
-  if (query === "") {
-    response = await fetch("/api/file/" + query, {
-      method: "GET", // The HTTP method
-    });
+  if (query === "" || query === null) {
+    popFileTable();
   } else {
     response = await fetch("/api/file/search/" + query, {
       method: "GET", // The HTTP method
@@ -238,6 +239,7 @@ async function searchDocuments() {
     const scoreCell = row.insertCell(4);
     const ratingCell = row.insertCell(5);
     const downloadCell = row.insertCell(6);
+    const reportCell = row.insertCell(7);
 
     const fileId = data[count]._id;
     const fileName = data[count].fileName;
@@ -259,13 +261,25 @@ async function searchDocuments() {
     // Set the innerHTML for the downloadCell with correct syntax
     downloadCell.innerHTML = `<button type="button" id="${fileId}">Download</button>`;
 
+    reportCell.innerHTML = `<button type="button" id="${fileId}-report">Report</button>`;
+
     // Retrieve the button element after it has been inserted into the DOM
-    const button = document.getElementById(fileId.toString());
+    const buttonDownload = document.getElementById(fileId.toString());
+
+    const buttonReport = document.getElementById(fileId.toString() + "-report");
 
     // Check if the button exists before attaching the event listener
-    if (button) {
-      button.addEventListener("click", (event) => {
+    if (buttonDownload) {
+      buttonDownload.addEventListener("click", (event) => {
         downloadButtonClick(event, fileId, fileName); // Call your download function
+      });
+    } else {
+      console.error(`Button with ID ${fileId} not found`);
+    }
+
+    if (buttonReport) {
+      buttonReport.addEventListener("click", (event) => {
+        reportButtonClick(event, fileId, fileName); // Call your download function
       });
     } else {
       console.error(`Button with ID ${fileId} not found`);
@@ -429,16 +443,16 @@ async function handleStarClick(event, fileIndex) {
 ////////////////////////////////////////////////////////////////////////////////
 // Modify Button Click Handler
 async function modifyButtonClick(event, userID, currentRole) {
-  const modal = document.createElement('div');
-  modal.style.position = 'fixed';
-  modal.style.top = '50%';
-  modal.style.left = '50%';
-  modal.style.transform = 'translate(-50%, -50%)';
-  modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-  modal.style.padding = '20px';
-  modal.style.border = '1px solid #ddd';
-  modal.style.borderRadius = '10px';
-  modal.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
+  const modal = document.createElement("div");
+  modal.style.position = "fixed";
+  modal.style.top = "50%";
+  modal.style.left = "50%";
+  modal.style.transform = "translate(-50%, -50%)";
+  modal.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+  modal.style.padding = "20px";
+  modal.style.border = "1px solid #ddd";
+  modal.style.borderRadius = "10px";
+  modal.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.1)";
   modal.innerHTML = `
     <h2>Update Role</h2>
     <label>Choose new role:</label>
@@ -456,21 +470,21 @@ async function modifyButtonClick(event, userID, currentRole) {
     <button id="cancel-btn">Cancel</button>
   `;
 
-  const overlay = document.createElement('div');
-  overlay.style.position = 'fixed';
-  overlay.style.top = '0';
-  overlay.style.left = '0';
-  overlay.style.width = '100%';
-  overlay.style.height = '100%';
-  overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+  const overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.top = "0";
+  overlay.style.left = "0";
+  overlay.style.width = "100%";
+  overlay.style.height = "100%";
+  overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
   document.body.appendChild(overlay);
 
   document.body.appendChild(modal);
 
-  const okBtn = modal.querySelector('#ok-btn');
-  const cancelBtn = modal.querySelector('#cancel-btn');
+  const okBtn = modal.querySelector("#ok-btn");
+  const cancelBtn = modal.querySelector("#cancel-btn");
 
-  okBtn.addEventListener('click', async () => {
+  okBtn.addEventListener("click", async () => {
     const radios = modal.querySelectorAll('input[name="role"]');
     let newRole;
 
@@ -482,7 +496,7 @@ async function modifyButtonClick(event, userID, currentRole) {
     }
 
     if (!newRole) {
-      alert('Please select a role.');
+      alert("Please select a role.");
       return;
     }
 
@@ -495,18 +509,19 @@ async function modifyButtonClick(event, userID, currentRole) {
     const apiEndpoint = `/api/user/${userID}`;
 
     // Fetch the authentication token from local storage or cookie
-    const token = localStorage.getItem('token') || document.cookie.split('=')[1];
+    const token =
+      localStorage.getItem("token") || document.cookie.split("=")[1];
 
     // Set the authentication token in the headers
     const headers = {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     };
 
     try {
       // Send a PUT request to update the user role
       const response = await fetch(apiEndpoint, {
-        method: 'PUT',
+        method: "PUT",
         headers,
         body: JSON.stringify(updatedData),
       });
@@ -538,7 +553,7 @@ async function modifyButtonClick(event, userID, currentRole) {
     }
   });
 
-  cancelBtn.addEventListener('click', () => {
+  cancelBtn.addEventListener("click", () => {
     // Remove the modal and overlay
     modal.remove();
     overlay.remove();
@@ -553,10 +568,12 @@ async function deleteButtonClick(event, userID) {
 
   try {
     const response = await fetch(`/api/user/${userID}`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token') || document.cookie.split('=')[1]}`
-      }
+        Authorization: `Bearer ${
+          localStorage.getItem("token") || document.cookie.split("=")[1]
+        }`,
+      },
     });
 
     if (!response.ok) {
@@ -575,21 +592,23 @@ async function deleteButtonClick(event, userID) {
 // Populate User Table
 async function popUserTable() {
   const response = await fetch("/api/users", {
-    method: "GET", 
+    method: "GET",
   });
 
   if (!response.ok) {
     throw new Error(`HTTP error! Status: ${response.status}`);
   }
 
-  const data = await response.json(); 
+  const data = await response.json();
   console.log(data);
-  const userTableBody = document.getElementById("userTable").getElementsByTagName("tbody")[0];
+  const userTableBody = document
+    .getElementById("userTable")
+    .getElementsByTagName("tbody")[0];
 
   userTableBody.innerHTML = "";
-  
+
   data.forEach((user) => {
-    const row = userTableBody.insertRow(); 
+    const row = userTableBody.insertRow();
 
     const nameCell = row.insertCell(0);
     const surnameCell = row.insertCell(1);
@@ -605,30 +624,39 @@ async function popUserTable() {
     emailCell.textContent = user.email;
     roleCell.textContent = user.role;
 
-    modifyCell.innerHTML = `<button type="button" id="modify-${userID}">Modify</button>`;
-      const modifyButton = document.getElementById(`modify-${userID.toString()}`);
+    modifyCell.innerHTML = `
+      <button type="button" id="modify-${userID}">
+        Modify
+      </button>`;
+    const modifyButton = document.getElementById(`modify-${userID.toString()}`);
 
-      if (modifyButton) {
-        modifyButton.addEventListener("click", (event) => {
-          modifyButtonClick(event, userID, user.role); 
-        });
-      } else {
-        console.error(`Button with ID modify-${userID} not found`);
-      }
+    if (modifyButton) {
+      modifyButton.addEventListener("click", (event) => {
+        modifyButtonClick(event, userID, user.role);
+      });
+    } else {
+      console.error(`Button with ID modify-${userID} not found`);
+    }
 
-      DelCell.innerHTML = `<button type="button" id="delete-${user._id}">Delete</button>`;
-      const deleteButton = document.getElementById(`delete-${user._id.toString()}`);
+    DelCell.innerHTML = `
+      <button type="button" id="delete-${user._id}">
+        Delete
+      </button>
+    `;
+    const deleteButton = document.getElementById(
+      `delete-${user._id.toString()}`
+    );
 
-      if (deleteButton) {
-        deleteButton.addEventListener("click", (event) => {
-          deleteButtonClick(event, user._id); 
-        });
-      } else {
-        console.error(`Button with ID delete-${user._id} not found`);
-      }
+    if (deleteButton) {
+      deleteButton.addEventListener("click", (event) => {
+        deleteButtonClick(event, user._id);
+      });
+    } else {
+      console.error(`Button with ID delete-${user._id} not found`);
+    }
 
-      console.log(user._id);
-    });
+    console.log(user._id);
+  });
 }
 ////////////////////////////////////////////////////////////////////////////////
 async function popFileTable() {
@@ -660,6 +688,7 @@ async function popFileTable() {
     const scoreCell = row.insertCell(4);
     const ratingCell = row.insertCell(5);
     const downloadCell = row.insertCell(6);
+    const reportCell = row.insertCell(7);
 
     const fileId = data[count]._id;
     const fileName = data[count].fileName;
@@ -681,13 +710,25 @@ async function popFileTable() {
     // Set the innerHTML for the downloadCell with correct syntax
     downloadCell.innerHTML = `<button type="button" id="${fileId}">Download</button>`;
 
+    reportCell.innerHTML = `<button type="button" id="${fileId}-report">Report</button>`;
+
     // Retrieve the button element after it has been inserted into the DOM
-    const button = document.getElementById(fileId.toString());
+    const buttonDownload = document.getElementById(fileId.toString());
+
+    const buttonReport = document.getElementById(fileId.toString() + "-report");
 
     // Check if the button exists before attaching the event listener
-    if (button) {
-      button.addEventListener("click", (event) => {
+    if (buttonDownload) {
+      buttonDownload.addEventListener("click", (event) => {
         downloadButtonClick(event, fileId, fileName); // Call your download function
+      });
+    } else {
+      console.error(`Button with ID ${fileId} not found`);
+    }
+
+    if (buttonReport) {
+      buttonReport.addEventListener("click", (event) => {
+        reportButtonClick(event, fileId, fileName); // Call your download function
       });
     } else {
       console.error(`Button with ID ${fileId} not found`);
@@ -703,6 +744,56 @@ async function popFileTable() {
 
     count++;
   });
+}
+
+function reportButtonClick(event, fileId, fileName) {
+  //const reportReason = prompt("Enter the reason for reporting the file");
+  fileReportId = fileId;
+  fileReportName = fileName;
+  openPopup();
+}
+
+async function submitReport(event) {
+  console.log(fileReportId);
+  console.log(fileReportName);
+
+  const selectedReasons = [];
+  document
+    .querySelectorAll('input[name="reportReason"]:checked')
+    .forEach((checkbox) => {
+      selectedReasons.push(checkbox.value);
+    });
+
+  console.log(
+    JSON.stringify({
+      reason: selectedReasons.join(", "),
+    })
+  );
+
+  const response = await fetch("/api/file/report/" + fileReportId, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      reason: selectedReasons.join(", "),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to report file");
+  }
+
+  const data = await response.json();
+  console.log(data);
+
+  alert("Report submitted");
+  closePopup();
+  document
+    .querySelectorAll('input[name="reportReason"]:checked')
+    .forEach((checkbox) => {
+      checkbox.checked = false;
+    });
 }
 
 async function popFaqTable() {
