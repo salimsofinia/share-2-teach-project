@@ -8,6 +8,7 @@ let countLogin = "";
 
 const { name } = require("ejs");
 const { response } = require("../authentication");
+const bcrypt = require("bcryptjs");
 
 // Get elements
 const fileInput = document.getElementById("choose-document-upload");
@@ -1190,6 +1191,77 @@ function initrest() {
     }
   }
 }
+
+async function updatePassword() {
+  // Get input values
+  const email = document.getElementById('email').value;
+  const oldPassword = document.getElementById('old_password').value;
+  const newPassword = document.getElementById('new_password').value;
+  const repeatNewPassword = document.getElementById('r_new_password').value;
+
+  // Get hashed new password
+  const hashResponse = await fetch(`/api/hash/${newPassword}`, {
+    method: 'GET',
+  });
+  const hashData = await hashResponse.json();
+  const hashedNew = hashData.hashed;
+
+  // Validate input values
+  if (!email || !oldPassword || !newPassword || !repeatNewPassword) {
+    alert('Please fill in all fields');
+    return;
+  }
+
+  if (newPassword !== repeatNewPassword) {
+    alert('New passwords do not match');
+    return;
+  }
+
+  // Get user ID from email (assuming email is unique)
+  try {
+    const response = await fetch(`/api/user/${email}`);
+    const users = await response.json();
+    const user = users[0];
+    const id = user._id;
+
+    // Validate old password
+    const loginResponse = await fetch(`/api/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password: oldPassword }),
+    });
+
+    if (loginResponse.status !== 200) {
+      alert('Invalid old password');
+      return;
+    }
+
+    // Update password
+    const updateResponse = await fetch(`/api/user/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password: hashedNew }),
+    });
+
+    if (updateResponse.status === 200) {
+      alert('Password updated successfully');
+      // Redirect to landing page
+      location.href = 'landing.html';
+    } else {
+      alert('Failed to update password');
+    }
+  } catch (error) {
+    console.error(error);
+    alert('Error updating password');
+  }
+}
+
+// Add event listener to update password button
+
 
 //code for watermark(later use)
 /*

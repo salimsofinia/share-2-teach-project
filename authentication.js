@@ -534,7 +534,39 @@ app.get("/api/useractions", authenticateJWT, async (req, res) => {
     res.status(500).json(error.message);
   }
 });
+///////////////////////////////////////////////////////
+// Loginn
+app.post("/api/loginn", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.find({ email: email });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+    res.status(200).json({ message: 'Logged in successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
+
+app.get("/api/hash/:password", async (req, res) => {
+  try {
+    const { password } = req.params;
+    const hash = await bcrypt.hash(password, 12);
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).json({ hashed: hash });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//////////////////////////////////////////////////////
 //all users
 app.get("/api/users", authenticateJWT, async (req, res) => {
   try {
@@ -553,10 +585,10 @@ app.get("/api/users", authenticateJWT, async (req, res) => {
   }
 });
 //get single user
-app.get("/api/user/:id", authenticateJWT, async (req, res) => {
+app.get("/api/user/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const user = await User.findById(id);
+    const user = await User.find({email: id});
     const useraction = new UserAction({
       action: "Get User",
     });
