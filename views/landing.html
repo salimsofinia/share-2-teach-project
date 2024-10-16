@@ -20,11 +20,33 @@
           <li class="dropdown">
             <a href="#" class="dropdown-toggle">Explore</a>
             <ul class="dropdown-menu">
-              <li><button type="button" class="login-button" onclick="openPopup()" id="navlogin">Log in</button></li>
-              <li><button type="button" class="logout-button" onclick="logout()" id="navlogout">Log out</button></li>
-              <li class = "hide-when-not-admin"><a href="account creation.html">Account creation</a></li>
-              <li class="hide-when-logged-out"><a href="password reset.html">Password Reset</a></li>
-              
+              <li>
+                <button
+                  type="button"
+                  class="login-button"
+                  onclick="openPopup()"
+                  id="navlogin"
+                >
+                  Log in
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  class="logout-button"
+                  onclick="logout()"
+                  id="navlogout"
+                >
+                  Log out
+                </button>
+              </li>
+              <li class="hide-when-not-admin">
+                <a href="account creation.html">Account creation</a>
+              </li>
+              <li class="hide-when-logged-out">
+                <a href="password reset.html">Password Reset</a>
+              </li>
+
               <li>
                 <a href="Search.html">Search</a>
               </li>
@@ -45,6 +67,9 @@
               </li>
               <li class="hide-when-logged-out">
                 <a href="Analytics.html">Analytics</a>
+              </li>
+              <li class="hide-when-not-admin">
+                <a href="Modhistory.html">Moderation History</a>
               </li>
               <li><a href="FAQ.html">FAQ</a></li>
               <li class="hide-when-not-admin">
@@ -76,5 +101,32 @@
     <footer>
       <p>&copy; 2024 Share 2 Teach</p>
     </footer>
+    <!---   <script>
+    function checkLoginStatus() {
+        let countLogin = 0;
+        console.log("Check session");
+        // Function to get a specific cookie by name
+        function getCookie(name) {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(";").shift();
+        }
+
+        const isLoggedIn = getCookie("isLoggedIn");
+
+        // If the cookie does not exist, prompt the user to log in again
+        if (!isLoggedIn && countLogin != 0) {
+          alert("Your session has expired. Please log in again.");
+          window.location.href = "/landing.html"; // Redirect to the login page
+        }
+        countLogin++;
+      }
+
+      // Check the login status every 5 minutes (300,000 milliseconds)
+      setInterval(checkLoginStatus, 300000);
+
+      // Also check immediately on page load
+      window.onload = checkLoginStatus;
+    </script>-->
   </body>
 </html>

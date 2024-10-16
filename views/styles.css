@@ -349,16 +349,15 @@ button:hover {
   border: 1px solid #333;
   border-radius: 5px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  width: 80vw; 
-  max-width: 600px; 
+  width: 80vw;
+  max-width: 600px;
   color: #fff;
   overflow-y: auto;
   max-height: 80vh;
   overflow-x: hidden;
   box-sizing: border-box;
-  text-align: center; 
+  text-align: center;
 }
-
 
 /* Login/Logout Styles */
 
@@ -401,8 +400,26 @@ button:hover {
   color: gold;
 }
 
-.login-button, .logout-button {
+.login-button,
+.logout-button {
   margin: 0 auto;
   display: block;
   text-align: center;
+}
+
+/* Add styles for the datagrid */
+.datagrid {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.datagrid th,
+.datagrid td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.datagrid th {
+  background-color: #3c1361;
 }
