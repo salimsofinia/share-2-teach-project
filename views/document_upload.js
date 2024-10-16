@@ -1,3 +1,8 @@
+//global
+let fileReportId = "";
+let fileReportName = "";
+let fileSelectedUpload = "";
+
 const { name } = require("ejs");
 const { response } = require("../authentication");
 
@@ -16,8 +21,6 @@ cancelBtn.addEventListener("click", handleCancel);
 saveBtn.addEventListener("click", (event) => {
   console.log("Hello i am pressing the save buttoin"); // Call your download function
 });
-
-let fileSelectedUpload = "";
 
 // Function to handle file change
 function handleFileChange(event) {
@@ -204,10 +207,8 @@ async function searchDocuments() {
   const query = prompt("Enter document name subject or grade to search:");
   console.log(query);
   let response = "";
-  if (query === "") {
-    response = await fetch("/api/file/" + query, {
-      method: "GET", // The HTTP method
-    });
+  if (query === "" || query === null) {
+    popFileTable();
   } else {
     response = await fetch("/api/file/search/" + query, {
       method: "GET", // The HTTP method
@@ -238,6 +239,7 @@ async function searchDocuments() {
     const scoreCell = row.insertCell(4);
     const ratingCell = row.insertCell(5);
     const downloadCell = row.insertCell(6);
+    const reportCell = row.insertCell(7);
 
     const fileId = data[count]._id;
     const fileName = data[count].fileName;
@@ -259,13 +261,25 @@ async function searchDocuments() {
     // Set the innerHTML for the downloadCell with correct syntax
     downloadCell.innerHTML = `<button type="button" id="${fileId}">Download</button>`;
 
+    reportCell.innerHTML = `<button type="button" id="${fileId}-report">Report</button>`;
+
     // Retrieve the button element after it has been inserted into the DOM
-    const button = document.getElementById(fileId.toString());
+    const buttonDownload = document.getElementById(fileId.toString());
+
+    const buttonReport = document.getElementById(fileId.toString() + "-report");
 
     // Check if the button exists before attaching the event listener
-    if (button) {
-      button.addEventListener("click", (event) => {
+    if (buttonDownload) {
+      buttonDownload.addEventListener("click", (event) => {
         downloadButtonClick(event, fileId, fileName); // Call your download function
+      });
+    } else {
+      console.error(`Button with ID ${fileId} not found`);
+    }
+
+    if (buttonReport) {
+      buttonReport.addEventListener("click", (event) => {
+        reportButtonClick(event, fileId, fileName); // Call your download function
       });
     } else {
       console.error(`Button with ID ${fileId} not found`);
@@ -579,7 +593,7 @@ async function popUserTable() {
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP error! Status: ${response.status}`);
+    throw new Error(HTTP error! Status: ${response.status});
   }
 
   const data = await response.json(); 
@@ -587,7 +601,7 @@ async function popUserTable() {
   const userTableBody = document.getElementById("userTable").getElementsByTagName("tbody")[0];
 
   userTableBody.innerHTML = "";
-  
+
   data.forEach((user) => {
     const row = userTableBody.insertRow(); 
 
@@ -605,26 +619,26 @@ async function popUserTable() {
     emailCell.textContent = user.email;
     roleCell.textContent = user.role;
 
-    modifyCell.innerHTML = `<button type="button" id="modify-${userID}">Modify</button>`;
-      const modifyButton = document.getElementById(`modify-${userID.toString()}`);
+    modifyCell.innerHTML = <button type="button" id="modify-${userID}">Modify</button>;
+      const modifyButton = document.getElementById(modify-${userID.toString()});
 
       if (modifyButton) {
         modifyButton.addEventListener("click", (event) => {
           modifyButtonClick(event, userID, user.role); 
         });
       } else {
-        console.error(`Button with ID modify-${userID} not found`);
+        console.error(Button with ID modify-${userID} not found);
       }
 
-      DelCell.innerHTML = `<button type="button" id="delete-${user._id}">Delete</button>`;
-      const deleteButton = document.getElementById(`delete-${user._id.toString()}`);
+      DelCell.innerHTML = <button type="button" id="delete-${user._id}">Delete</button>;
+      const deleteButton = document.getElementById(delete-${user._id.toString()});
 
       if (deleteButton) {
         deleteButton.addEventListener("click", (event) => {
           deleteButtonClick(event, user._id); 
         });
       } else {
-        console.error(`Button with ID delete-${user._id} not found`);
+        console.error(Button with ID delete-${user._id} not found);
       }
 
       console.log(user._id);
@@ -660,6 +674,7 @@ async function popFileTable() {
     const scoreCell = row.insertCell(4);
     const ratingCell = row.insertCell(5);
     const downloadCell = row.insertCell(6);
+    const reportCell = row.insertCell(7);
 
     const fileId = data[count]._id;
     const fileName = data[count].fileName;
@@ -681,13 +696,25 @@ async function popFileTable() {
     // Set the innerHTML for the downloadCell with correct syntax
     downloadCell.innerHTML = `<button type="button" id="${fileId}">Download</button>`;
 
+    reportCell.innerHTML = `<button type="button" id="${fileId}-report">Report</button>`;
+
     // Retrieve the button element after it has been inserted into the DOM
-    const button = document.getElementById(fileId.toString());
+    const buttonDownload = document.getElementById(fileId.toString());
+
+    const buttonReport = document.getElementById(fileId.toString() + "-report");
 
     // Check if the button exists before attaching the event listener
-    if (button) {
-      button.addEventListener("click", (event) => {
+    if (buttonDownload) {
+      buttonDownload.addEventListener("click", (event) => {
         downloadButtonClick(event, fileId, fileName); // Call your download function
+      });
+    } else {
+      console.error(`Button with ID ${fileId} not found`);
+    }
+
+    if (buttonReport) {
+      buttonReport.addEventListener("click", (event) => {
+        reportButtonClick(event, fileId, fileName); // Call your download function
       });
     } else {
       console.error(`Button with ID ${fileId} not found`);
@@ -703,6 +730,56 @@ async function popFileTable() {
 
     count++;
   });
+}
+
+function reportButtonClick(event, fileId, fileName) {
+  //const reportReason = prompt("Enter the reason for reporting the file");
+  fileReportId = fileId;
+  fileReportName = fileName;
+  openPopup();
+}
+
+async function submitReport(event) {
+  console.log(fileReportId);
+  console.log(fileReportName);
+
+  const selectedReasons = [];
+  document
+    .querySelectorAll('input[name="reportReason"]:checked')
+    .forEach((checkbox) => {
+      selectedReasons.push(checkbox.value);
+    });
+
+  console.log(
+    JSON.stringify({
+      reason: selectedReasons.join(", "),
+    })
+  );
+
+  const response = await fetch("/api/file/report/" + fileReportId, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      reason: selectedReasons.join(", "),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to report file");
+  }
+
+  const data = await response.json();
+  console.log(data);
+
+  alert("Report submitted");
+  closePopup();
+  document
+    .querySelectorAll('input[name="reportReason"]:checked')
+    .forEach((checkbox) => {
+      checkbox.checked = false;
+    });
 }
 
 async function popFaqTable() {
