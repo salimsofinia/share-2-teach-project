@@ -2,21 +2,29 @@ const { name } = require("ejs");
 const { response } = require("../authentication");
 
 // Get elements
-const fileInput = document.getElementById("document-upload");
+const fileInput = document.getElementById("choose-document-upload");
 const fileName = document.getElementById("document-name");
 const progressBar = document.getElementById("progress-bar");
-const saveBtn = document.getElementById("save-btn");
-const cancelBtn = document.getElementById("cancel-btn");
+const saveBtn = document.getElementById("save-btn-upload");
+const cancelBtn = document.getElementById("cancel-btn-upload");
 
 // Add event listeners
 fileInput.addEventListener("change", handleFileChange);
 saveBtn.addEventListener("click", handleSave);
 cancelBtn.addEventListener("click", handleCancel);
 
+saveBtn.addEventListener("click", (event) => {
+  console.log("Hello i am pressing the save buttoin"); // Call your download function
+});
+
+let fileSelectedUpload = "";
+
 // Function to handle file change
 function handleFileChange(event) {
+  console.log("asasasasdfadsf");
   const file = event.target.files[0];
-  fileName.textContent = file.name;
+  fileSelectedUpload = file;
+  //fileName.textContent = file.name;
   // Update progress bar (optional)
   progressBar.value = 0;
 }
@@ -76,12 +84,13 @@ async function Login() {
 }
 // Function to handle save button click
 function handleSave() {
+  console.log("saved");
   // Add save logic here (e.g., send file to server)
   let progress = 0;
   const intervalId = setInterval(() => {
     progress += 20; // 100% / 5s = 20% per second
     progressBar.value = progress;
-    progressText.textContent = `${progress}%`;
+    progressBar.textContent = `${progress}%`;
 
     if (progress >= 100) {
       clearInterval(intervalId);

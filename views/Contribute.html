@@ -1,55 +1,163 @@
 <!DOCTYPE html>
-<script src="document_upload.js"></script>
+
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Share2Teach</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <header>
-        <nav>
-            <ul>
-                <li><a href="landing.html" class="logo"><img src="logo.jpg" alt="NWU LOGO" width="25%" align="left"></a></li>
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle">Explore</a>
-                    <ul class="dropdown-menu">
-                        <li><a href="landing.html">Home</a></li>
-                        <li><a href="FAQ.html">FAQ</a></li>
-                    </ul>
-                </li>
+      <nav>
+        <ul>
+          <li>
+            <a href="landing.html" class="logo"
+              ><img src="logo.jpg" alt="NWU LOGO" width="25%" align="left"
+            /></a>
+          </li>
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle">Explore</a>
+            <ul class="dropdown-menu">
+              <li><a href="landing.html">Home</a></li>
+              <li><a href="FAQ.html">FAQ</a></li>
             </ul>
-        </nav>
+          </li>
+        </ul>
+      </nav>
     </header>
     <main>
-        <div class="regbox">
-            <h1>Contribute new Documents</h1>
-            <div class="subbox">
-                <form>
-                    <!-- File input field -->
-                    <input type="file" id="document-upload" accept=".pdf, .docx, .doc">
+      <div class="regbox">
+        <h1>Contribute new Documents</h1>
+        <div class="subbox">
+          <form>
+            <!-- File input field -->
+            <input
+              type="file"
+              id="choose-document-upload"
+              accept=".pdf, .docx, .doc"
+            />
 
-                    <!-- Display document name -->
-                    <p id="document-name"></p>
+            <!-- Display document name -->
+            <p id="document-nam"></p>
 
-                    <!-- Progress bar (optional) -->
-                    <progress id="progress-bar" value="0" max="100" align="centre"></progress>
-                    
-                    <div class="buttons">
-                    <!-- Button to save file -->
-                    <button id="save-btn">Save</button>
-                    <button id="Cancel" >Cancel</button>
-                        
-                    </div>
+            <label for="document-upload-subject">Subject:</label>
+            <input type="text" id="document-upload-subject" /><br />
+            <label for="document-upload-grade">Grade:</label>
+            <input type="text" id="document-upload-grade" /><br />
 
-                </form>
+            <!-- Progress bar (optional) -->
+            <progress
+              id="progress-bar"
+              value="0"
+              max="100"
+              align="centre"
+            ></progress>
+
+            <div class="buttons">
+              <!-- Button to save file -->
+              <button type="button" id="save-btn-upload">Save</button>
+              <button type="button" id="cancel-btn-upload">Cancel</button>
             </div>
+          </form>
         </div>
-
+      </div>
     </main>
     <footer>
-        <p>&copy; 2024 Share 2 Teach</p>
+      <p>&copy; 2024 Share 2 Teach</p>
     </footer>
-</body>
+    <script>
+      const fileInput = document.getElementById("choose-document-upload");
+      const saveBtn = document.getElementById("save-btn-upload");
+      const cancelBtn = document.getElementById("cancel-btn-upload");
+      //const fileName = document.getElementById("document-name");
+      const progressBar = document.getElementById("progress-bar");
+
+      fileInput.addEventListener("change", handleFileChange);
+      saveBtn.addEventListener("click", handleSave);
+
+      let fileSelectedUpload = "";
+
+      // Function to handle file change
+      function handleFileChange(event) {
+        const file = event.target.files[0];
+        fileSelectedUpload = file;
+        console.log(fileSelectedUpload);
+        fileName.textContent = file.name;
+        // Update progress bar (optional)
+        progressBar.value = 0;
+      }
+
+      async function handleSave(event) {
+        console.log("Save button clicked");
+
+        if (!fileSelectedUpload) {
+          alert("Please choose a file.");
+          return;
+        }
+
+        const subject = document.getElementById("document-upload-subject");
+        const grade = document.getElementById("document-upload-grade");
+
+        if (subject.value === "") {
+          alert("Subject cannot be empty");
+          return;
+        }
+        if (grade.value === "") {
+          alert("Grade cannot be empty");
+          return;
+        }
+
+        console.log("Subject:", subject.value, "Grade:", grade.value);
+
+        const formData = new FormData(); // Create a new FormData object
+        formData.append("file", fileSelectedUpload); // Append the file to the FormData object
+        formData.append("subject", subject.value);
+        formData.append("grade", grade.value);
+
+        try {
+          // Send a POST request with the file
+          const response = await fetch("/api/file", {
+            method: "POST",
+            body: formData, // Send the FormData object with the file
+          });
+
+          if (!response.ok) {
+            alert(
+              "File with name: " +
+                fileSelectedUpload.name +
+                " already exists or invalid type"
+            );
+            fileInput.value = "";
+            subject.value = "";
+            grade.value = "";
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          let progress = 0;
+          const intervalId = setInterval(() => {
+            progress += 20; // 100% / 5s = 20% per second
+            progressBar.value = progress;
+            progressBar.textContent = `${progress}%`;
+
+            if (progress >= 100) {
+              clearInterval(intervalId);
+              console.log("Upload complete!");
+              // Reset file input after upload completion
+              fileInput.value = "";
+              subject.value = "";
+              grade.value = "";
+              //     fileName.textContent = "";
+            }
+          }, 500); // 1000ms = 1 second
+          progressBar.value = 0;
+          //  console.log("File upload started...");
+
+          const result = await response.json(); // Parse the JSON response
+          console.log("File uploaded successfully:", result);
+        } catch (error) {
+          console.error("Error during file upload:", error);
+        }
+      }
+    </script>
+  </body>
 </html>
