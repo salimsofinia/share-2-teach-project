@@ -853,5 +853,9 @@ addWatermarkToPdf(pdfFile, watermarkImage);
 */
 
 // Retrieve documents from database and display
+
+////////////////////////////////////////////////////////////////////////
+// Function to create user
+
 retrieveDocuments();
 displayDocuments();
