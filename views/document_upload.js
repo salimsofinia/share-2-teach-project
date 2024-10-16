@@ -625,7 +625,7 @@ async function popUserTable() {
     roleCell.textContent = user.role;
 
     modifyCell.innerHTML = `
-      <button type="button" id="modify-${userID}">
+      <button type="button" id="modify-${userID}" style="width: 100%;">
         Modify
       </button>`;
     const modifyButton = document.getElementById(`modify-${userID.toString()}`);
@@ -639,10 +639,10 @@ async function popUserTable() {
     }
 
     DelCell.innerHTML = `
-      <button type="button" id="delete-${user._id}">
-        Delete
-      </button>
-    `;
+    <button type="button" id="delete-${user._id}" style="width: 100%;">
+      Delete
+    </button>
+  `;
     const deleteButton = document.getElementById(
       `delete-${user._id.toString()}`
     );
@@ -708,10 +708,9 @@ async function popFileTable() {
       fileId
     ); // Pass index for unique ID
     // Set the innerHTML for the downloadCell with correct syntax
-    downloadCell.innerHTML = `<button type="button" id="${fileId}">Download</button>`;
+    downloadCell.innerHTML = `<button type="button" id="${fileId}" style="width: 100%;">Download</button>`;
 
-    reportCell.innerHTML = `<button type="button" id="${fileId}-report">Report</button>`;
-
+    reportCell.innerHTML = `<button type="button" id="${fileId}-report" style="width: 100%;">Report</button>`;
     // Retrieve the button element after it has been inserted into the DOM
     const buttonDownload = document.getElementById(fileId.toString());
 
