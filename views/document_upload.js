@@ -791,9 +791,9 @@ async function popModTable() {
     // Generate and set the clickable star rating
     commentsCell.textContent = data[count].comments;
     // Set the innerHTML for the downloadCell with correct syntax
-    validateCell.innerHTML = `<button type="button" id="${fileId}-validate">Validate</button>`;
+    validateCell.innerHTML = `<button type="button" id="${fileId}-validate" style="width: 100%;">Validate</button>`;
 
-    deleteCell.innerHTML = `<button type="button" id="${fileId}-delete">Delete</button>`;
+    deleteCell.innerHTML = `<button type="button" id="${fileId}-delete" style="width: 100%;">Delete</button>`;
 
     // Retrieve the button element after it has been inserted into the DOM
     const validateButton = document.getElementById(

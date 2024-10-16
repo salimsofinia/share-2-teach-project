@@ -214,6 +214,7 @@ footer {
   align-items: center;
   margin-bottom: 50px;
   transition: all 0.3s ease;
+ 
 }
 
 .box:hover {
@@ -221,17 +222,42 @@ footer {
 }
 
 .subbox {
-  width: 800px;
+  max-width: 100%;
   padding: 20px;
   background-color: #23252e;
   border: 1px solid #333;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  
+  /* Vertically flexible, with minimum height */
+  min-height: 100px;
+  height: auto; /* Expand to fit content */
+  max-height: calc(100vh - 200px); /* Leave space for header & footer */
+  
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 50px;
+  
+  /* Adjust margins to maintain spacing */
+  margin: 20px auto 20px;
+  
   transition: all 0.3s ease;
+  
+  /* Handle overflow */
+  overflow-y: auto;
+}
+
+.subbox::-webkit-scrollbar {
+  width: 8px; /* Vertical scrollbar width */
+}
+
+.subbox::-webkit-scrollbar-thumb {
+  background-color: #8a0ffb; /* Neon purple */
+  border-radius: 5px;
+}
+
+.subbox::-webkit-scrollbar-track {
+  background-color: #333; /* Dark background */
 }
 
 .subbox:hover {
