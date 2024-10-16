@@ -79,9 +79,31 @@ async function Login() {
       const expires = new Date(Date.now() + 3600000).toUTCString(); //i hour
       document.cookie = "isLoggedIn=true; expires=${expires}";
       document.cookie = "isAdmin=true; expires=${expires}";
-      alert("Welcome, you have been sucessfully logged in ");
-      closePopup();
     }
+    if (userRole == "Moderator") {
+      const isLoggedIn = true;
+      const viewItems = document.querySelectorAll(".hide-when-logged-out"); // Select nav items
+
+      viewItems.forEach((item) => {
+        item.style.display = isLoggedIn ? "list-item" : "none"; // Show or hide based on login state
+      });
+      const expires = new Date(Date.now() + 3600000).toUTCString(); //i hour
+      document.cookie = "isLoggedIn=true; expires=${expires}";
+      document.cookie = "isModerator=true; expires=${expires}";
+    }
+    if (userRole == "Educator") {
+      const isLoggedIn = true;
+      const viewItems = document.querySelectorAll(".hide-when-logged-out"); // Select nav items
+
+      viewItems.forEach((item) => {
+        item.style.display = isLoggedIn ? "list-item" : "none"; // Show or hide based on login state
+      });
+      const expires = new Date(Date.now() + 3600000).toUTCString(); //i hour
+      document.cookie = "isLoggedIn=true; expires=${expires}";
+    }
+
+    alert("Welcome, you have been sucessfully logged in ");
+    closePopup();
   } catch (error) {
     console.error("Error logging in:", error);
     alert("Error logging in. Please try again.");
@@ -1055,6 +1077,8 @@ function logout() {
   // Set cookies to indicate logged-out state
   document.cookie = "isLoggedIn=false";
   document.cookie = "isAdmin=false";
+  document.cookie = "isModerator=false";
+  document.cookie = "isEducator=false";
 
   // Optional: Remove any other authentication tokens or session data
 
@@ -1067,6 +1091,8 @@ function init() {
   logoutBtn.style.display = "none";
   const isLoggedIn = document.cookie.includes("isLoggedIn=true");
   const isAdmin = document.cookie.includes("isAdmin=true");
+  const isModerator = document.cookie.includes("isModerator=true");
+  const isEducator = document.cookie.includes("isEducator=true");
 
   if (isLoggedIn) {
     const logoutBtn = document.getElementById("navlogout");
@@ -1092,6 +1118,21 @@ function init() {
         item.style.display = "block";
       });
     }
+    if (isModerator) {
+      const logoutBtn = document.getElementById("navlogout");
+      logoutBtn.style.display = "block";
+      document.body.classList.add("logged-in-as-moderator");
+      const moderatorItems = document.querySelectorAll(
+        ".hide-when-not-moderator"
+      );
+      moderatorItems.forEach((item) => {
+        item.style.display = "block";
+      });
+    }
+    if (isEducator) {
+      const logoutBtn = document.getElementById("navlogout");
+      logoutBtn.style.display = "block";
+    }
   } else {
     // Optional: Handle logged-out state
     const viewItems = document.querySelectorAll(".hide-when-logged-in");
@@ -1111,12 +1152,18 @@ function init() {
     adminItems.forEach((item) => {
       item.style.display = "none";
     });
+    const modItems = document.querySelectorAll(".hide-when-not-moderator");
+    modItems.forEach((item) => {
+      item.style.display = "none";
+    });
   }
 }
 
 function initrest() {
   const isLoggedIn = document.cookie.includes("isLoggedIn=true");
   const isAdmin = document.cookie.includes("isAdmin=true");
+  const isModerator = document.cookie.includes("isModerator=true");
+  const isEducator = document.cookie.includes("isEducator=true");
 
   if (isLoggedIn) {
     const viewItems = document.querySelectorAll(".hide-when-logged-out");
@@ -1130,6 +1177,14 @@ function initrest() {
       document.body.classList.add("logged-in-as-admin");
       const adminItems = document.querySelectorAll(".hide-when-not-admin");
       adminItems.forEach((item) => {
+        item.style.display = "block";
+      });
+    }
+
+    if (isModerator) {
+      document.body.classList.add("logged-in-as-moderator");
+      const modItems = document.querySelectorAll(".hide-when-not-moderator");
+      modItems.forEach((item) => {
         item.style.display = "block";
       });
     }

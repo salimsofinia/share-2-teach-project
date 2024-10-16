@@ -62,10 +62,10 @@
               <li class="hide-when-logged-out">
                 <a href="Self-Directed Learning.html">Self-Directed Learning</a>
               </li>
-              <li class="hide-when-not-admin">
+              <li class="hide-when-not-moderator">
                 <a href="Moderate.html">Moderate</a>
               </li>
-              <li class="hide-when-logged-out">
+              <li class="hide-when-not-admin">
                 <a href="Analytics.html">Analytics</a>
               </li>
               <li class="hide-when-not-admin">
@@ -101,32 +101,5 @@
     <footer>
       <p>&copy; 2024 Share 2 Teach</p>
     </footer>
-    <!---   <script>
-    function checkLoginStatus() {
-        let countLogin = 0;
-        console.log("Check session");
-        // Function to get a specific cookie by name
-        function getCookie(name) {
-          const value = `; ${document.cookie}`;
-          const parts = value.split(`; ${name}=`);
-          if (parts.length === 2) return parts.pop().split(";").shift();
-        }
-
-        const isLoggedIn = getCookie("isLoggedIn");
-
-        // If the cookie does not exist, prompt the user to log in again
-        if (!isLoggedIn && countLogin != 0) {
-          alert("Your session has expired. Please log in again.");
-          window.location.href = "/landing.html"; // Redirect to the login page
-        }
-        countLogin++;
-      }
-
-      // Check the login status every 5 minutes (300,000 milliseconds)
-      setInterval(checkLoginStatus, 300000);
-
-      // Also check immediately on page load
-      window.onload = checkLoginStatus;
-    </script>-->
   </body>
 </html>
