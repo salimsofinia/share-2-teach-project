@@ -417,7 +417,90 @@ async function handleStarClick(event, fileIndex) {
     console.error("Error updating rating:", error);
   }
 }
+/*
+async function modifyButtonClick(event, fileID, fileName) {
+  const fileId = fileID; // Replace with your actual file ID
+  fetch(`/api/file/${fileId}`, {
+    method: "GET", // Make sure you are using the correct method
+  })
+    .then((response) => {
+      // Check if the response is OK (status 200-299)
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      // Get the response as a Blob for downloading
+      return response.blob();
+    })
+    .then((blob) => {
+      // Create a URL for the Blob
+      const url = window.URL.createObjectURL(blob);
+      // Create an anchor element to trigger the download
+      const a = document.createElement("a");
+      a.style.display = "none"; // Hide the anchor
+      a.href = url; // Set the Blob URL as href
+      a.download = fileName; // Set the desired file name
+      document.body.appendChild(a); // Append anchor to the body
+      a.click(); // Programmatically click the anchor to trigger the download
+      window.URL.revokeObjectURL(url); // Clean up
+    })
+    .catch((error) => {
+      console.error("Fetch error:", error);
+    });
+}
+*/
+async function popUserTable() {
+  const response = await fetch("/api/users", {
+    method: "GET", // The HTTP method
+  });
 
+  // Check if the response status is OK (status code 200-299)
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+  const data = await response.json(); // Parse the response data
+  console.log(data);
+  const usertablebody = document
+    .getElementById("userTable")
+    .getElementsByTagName("tbody")[0];
+
+    usertablebody.innerHTML = "";
+  let count = 0;
+  // Populate the table with the fetched data
+  data.forEach((user) => {
+    const row = usertablebody.insertRow(); // Create a new row
+
+    // Create and insert cells into the row
+    const nameCell = row.insertCell(0);
+    const surnameCell = row.insertCell(1);
+    const emailCell = row.insertCell(2);
+    const RoleCell = row.insertCell(3);
+    const ModifyCell = row.insertCell(4);
+
+    const userId = data[count]._id;
+    const FirstName = data[count].firstname;
+    // Set the cell values
+    nameCell.textContent = data[count].firstname;
+    surnameCell.textContent = data[count].lastname;
+    emailCell.textContent = data[count].email;
+    RoleCell.textContent = data[count].role;
+    
+    
+  
+    ModifyCell.innerHTML = `<button type="button" id="${userId}">Modify</button>`;
+    const button = document.getElementById(userId.toString());
+    if (button) {
+      button.addEventListener("click", (event) => {
+        modifyButtonClick(event, userId, FirstName); // Call your download function
+      });
+    } else {
+      console.error(`Button with ID ${userId} not found`);
+    }
+
+    console.log(data[count]._id);
+    count++;
+  });
+}
+////////////////////////////////////////////////////////////////////////////////
 async function popFileTable() {
   const response = await fetch("/api/file", {
     method: "GET", // The HTTP method

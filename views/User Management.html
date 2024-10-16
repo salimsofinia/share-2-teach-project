@@ -1,13 +1,32 @@
 <!DOCTYPE html>
+<script src="document_upload.js"></script>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Share2Teach</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body onload="popUserTable(); initrest()">
     <header>
+        <style>
+            /* Add styles for the datagrid */
+            .datagrid {
+              border-collapse: collapse;
+              width: 100%;
+            }
+      
+            .datagrid th,
+            .datagrid td {
+              border: 1px solid #ddd;
+              padding: 10px;
+              text-align: left;
+            }
+      
+            .datagrid th {
+              background-color: #3c1361;
+            }
+          </style>
         <nav>
             <ul>
                 <li><a href="landing.html" class="logo"><img src="logo.jpg" alt="NWU LOGO" width="25%" align="left"></a></li>
@@ -20,8 +39,24 @@
             
             <div class="subbox">
                 <form>
-                    <h1>List of Users:</h1><br><br>
+                    <h1>List of Users:</h1>
                     <div id="users-list"></div>
+                    
+            <br />
+            <table class="datagrid" id="userTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Surname</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Modify</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Sample data -->
+              </tbody>
+            </table>
                 </form>
             </div>
         </div>
