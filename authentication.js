@@ -682,10 +682,10 @@ app.delete("/api/faq/:id", async (req, res) => {
 });
 
 //files
-//show all files
+//show all files that have been validated
 app.get("/api/file", async (req, res) => {
   try {
-    const file = await File.find({});
+    const file = await File.find({ Validation: true });
     const useraction = new UserAction({
       action: "Get All Files",
     });
@@ -810,7 +810,7 @@ app.get("/api/files/validate", authenticateJWT, async (req, res) => {
         action: "Get Files Unvalidated",
       });
       useraction.save();
-      res.status(200).json({ files });
+      res.status(200).json(files);
     } else {
       res.status(403).json({
         message: "Invalid Credential: Only Admins may validate files",
@@ -827,6 +827,7 @@ app.get("/api/file/search/:query", async (req, res) => {
 
   try {
     const files = await File.find({
+      Validation: true,
       $or: [
         { fileName: { $regex: query, $options: "i" } }, //"i indicates case insensitive"},
         { subject: { $regex: query, $options: "i" } }, //"i indicates case insensitive"},
@@ -850,12 +851,12 @@ app.put("/api/file/:id", authenticateJWT, async (req, res) => {
   try {
     if (req.user.role === "Admin" || req.user.role === "Moderator") {
       const { id } = req.params;
-      const { validation, comments } = req.body;
+      const { Validation, comments } = req.body;
       //for moderation history purposes
       const oldFile = await File.findById(id);
       if (oldFile) {
-        const valUpdate = validation;
-
+        const valUpdate = Validation;
+        console.log(Validation);
         const file = await File.findByIdAndUpdate(
           id,
           { Validation: valUpdate, comments: comments },
@@ -871,7 +872,7 @@ app.put("/api/file/:id", authenticateJWT, async (req, res) => {
               fileName: oldFile.fileName,
               oldValidation: oldFile.Validation,
               oldComments: oldFile.comments,
-              newValidation: validation,
+              newValidation: Validation,
               newComments: comments,
             });
             modhistory.save();
@@ -902,7 +903,7 @@ app.put("/api/file/:id", authenticateJWT, async (req, res) => {
 app.get("/api/modhistory", async (req, res) => {
   try {
     const modHistory = await Modhistory.find({});
-    res.status(200).json({ modHistory });
+    res.status(200).json(modHistory);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

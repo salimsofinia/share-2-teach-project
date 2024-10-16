@@ -2,6 +2,9 @@
 let fileReportId = "";
 let fileReportName = "";
 let fileSelectedUpload = "";
+let fileModerateId = "";
+let fileModerateName = "";
+let countLogin = "";
 
 const { name } = require("ejs");
 const { response } = require("../authentication");
@@ -746,6 +749,82 @@ async function popFileTable() {
   });
 }
 
+async function popModTable() {
+  const response = await fetch("/api/files/validate", {
+    method: "GET", // The HTTP method
+  });
+
+  // Check if the response status is OK (status code 200-299)
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+  const data = await response.json(); // Parse the response data
+  console.log(typeof data);
+  const modTableBody = document
+    .getElementById("fileTableModerate")
+    .getElementsByTagName("tbody")[0];
+
+  modTableBody.innerHTML = "";
+  let count = 0;
+  // Populate the table with the fetched data
+  data.forEach((file) => {
+    const row = modTableBody.insertRow(); // Create a new row
+
+    // Create and insert cells into the row
+    const nameCell = row.insertCell(0);
+    const sizeCell = row.insertCell(1);
+    const subjectCell = row.insertCell(2);
+    const gradeCell = row.insertCell(3);
+    const validationCell = row.insertCell(4);
+    const commentsCell = row.insertCell(5);
+    const validateCell = row.insertCell(6);
+    const deleteCell = row.insertCell(7);
+
+    const fileId = data[count]._id;
+    const fileName = data[count].fileName;
+    // Set the cell values
+    nameCell.textContent = data[count].fileName;
+    sizeCell.textContent =
+      (data[count].fileSize / (1024 * 1024)).toFixed(2) + " MB";
+    subjectCell.textContent = data[count].subject;
+    gradeCell.textContent = data[count].grade;
+    validationCell.textContent = data[count].Validation;
+    // Generate and set the clickable star rating
+    commentsCell.textContent = data[count].comments;
+    // Set the innerHTML for the downloadCell with correct syntax
+    validateCell.innerHTML = `<button type="button" id="${fileId}-validate">Validate</button>`;
+
+    deleteCell.innerHTML = `<button type="button" id="${fileId}-delete">Delete</button>`;
+
+    // Retrieve the button element after it has been inserted into the DOM
+    const validateButton = document.getElementById(
+      fileId.toString() + "-validate"
+    );
+
+    const deleteFileButton = document.getElementById(
+      fileId.toString() + "-delete"
+    );
+
+    // Check if the button exists before attaching the event listener
+    if (validateButton) {
+      validateButton.addEventListener("click", (event) => {
+        validateButtonClick(event, fileId, fileName); // Call your download function
+      });
+    } else {
+      console.error(`Button with ID ${fileId} not found`);
+    }
+
+    if (deleteFileButton) {
+      deleteFileButton.addEventListener("click", (event) => {
+        deleteFileButtonClick(event, fileId, fileName); // Call your download function
+      });
+    } else {
+      console.error(`Button with ID ${fileId} not found`);
+    }
+    count++;
+  });
+}
+
 function reportButtonClick(event, fileId, fileName) {
   //const reportReason = prompt("Enter the reason for reporting the file");
   fileReportId = fileId;
@@ -796,6 +875,84 @@ async function submitReport(event) {
     });
 }
 
+async function popModerationHistoryTable() {
+  const response = await fetch("/api/modhistory", {
+    method: "GET", // The HTTP method
+  });
+
+  // Check if the response status is OK (status code 200-299)
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+  const data = await response.json(); // Parse the response data
+  console.log(data);
+  const modhistoryTableBody = document
+    .getElementById("fileModerationHistory")
+    .getElementsByTagName("tbody")[0];
+
+  modhistoryTableBody.innerHTML = "";
+  let count = 0;
+  // Populate the table with the fetched data
+  data.forEach((faq) => {
+    const row = modhistoryTableBody.insertRow(); // Create a new row
+
+    // Create and insert cells into the row
+    const moderatorCell = row.insertCell(0);
+    const filenameCell = row.insertCell(1);
+    const oldvalCell = row.insertCell(2);
+    const oldcommentCell = row.insertCell(3);
+    const newvalCell = row.insertCell(4);
+    const newcommentCell = row.insertCell(5);
+    const updatedAtCell = row.insertCell(6);
+
+    // Set the cell values
+    moderatorCell.textContent = data[count].moderator;
+    filenameCell.textContent = data[count].fileName;
+    oldvalCell.textContent = data[count].oldValidation;
+    oldcommentCell.textContent = data[count].oldComments;
+    newvalCell.textContent = data[count].newValidation;
+    newcommentCell.textContent = data[count].newComments;
+    const timestamp = new Date(data[count].updatedAt);
+    updatedAtCell.textContent = timestamp
+      .toISOString()
+      .slice(0, 16)
+      .replace("T", " ");
+
+    count++;
+  });
+}
+
+async function popAnalyticsTable() {
+  const response = await fetch("/api/useractions", {
+    method: "GET", // The HTTP method
+  });
+
+  // Check if the response status is OK (status code 200-299)
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+  const data = await response.json(); // Parse the response data
+  console.log(data);
+  const analyticsTableBody = document
+    .getElementById("fileTableAnalytics")
+    .getElementsByTagName("tbody")[0];
+
+  analyticsTableBody.innerHTML = "";
+  let count = 0;
+  // Populate the table with the fetched data
+  data.forEach((faq) => {
+    const row = analyticsTableBody.insertRow(); // Create a new row
+
+    // Create and insert cells into the row
+    const actionCell = row.insertCell(0);
+
+    // Set the cell values
+    actionCell.textContent = data[count].action;
+
+    count++;
+  });
+}
+
 async function popFaqTable() {
   const response = await fetch("/api/faqs", {
     method: "GET", // The HTTP method
@@ -827,6 +984,70 @@ async function popFaqTable() {
     count++;
   });
 }
+
+function validateButtonClick(event, fileId, fileName) {
+  fileModerateId = fileId;
+  fileModerateName = fileName;
+  openPopup();
+}
+
+async function submitModeration() {
+  // Get the selected true/false option
+  const moderationChoice = document.querySelector(
+    'input[name="moderationChoice"]:checked'
+  );
+
+  console.log(
+    JSON.stringify({
+      Validation: moderationChoice.value,
+      comments: document.getElementById("moderate-comments").value,
+    })
+  );
+
+  const response = await fetch("/api/file/" + fileModerateId, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      Validation: moderationChoice.value,
+      comments: document.getElementById("moderate-comments").value,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to report file");
+  }
+
+  const data = await response.json();
+  console.log(data);
+  moderationChoice.checked = false;
+  document.getElementById("moderate-comments").value = "";
+  closePopup();
+  alert("File has been moderated");
+  popModTable();
+}
+
+async function deleteFileButtonClick(event, fileId, fileName) {
+  const delChoice = confirm(
+    "Are you sure you want to delete file: " + fileName + " ?"
+  );
+  if (delChoice) {
+    console.log("cancel presed");
+    const response = await fetch("/api/file/" + fileId, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to report file");
+    }
+
+    const data = await response.json();
+    console.log(data);
+    popModTable();
+  }
+}
+
 function logout() {
   // Hide logout button
   const logoutBtn = document.getElementById("navlogout");

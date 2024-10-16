@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="styles.css" />
     <script src="document_upload.js" defer></script>
   </head>
-  <body onload="popAnalyticsTable()">
+  <body onload="popModerationHistoryTable()">
     <header>
       <nav>
         <ul>
@@ -23,11 +23,17 @@
       <div class="regbox">
         <div class="subbox">
           <form>
-            <h1>Analytics:</h1>
-            <table class="datagrid" id="fileTableAnalytics">
+            <h1>Moderation History:</h1>
+            <table class="datagrid" id="fileModerationHistory">
               <thead>
                 <tr>
-                  <th>Action</th>
+                  <th>Moderator</th>
+                  <th>File</th>
+                  <th>Old Validation</th>
+                  <th>Old Comments</th>
+                  <th>New Validation</th>
+                  <th>New Comments</th>
+                  <th>Updated At</th>
                 </tr>
               </thead>
               <tbody>

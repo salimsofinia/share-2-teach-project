@@ -7,7 +7,7 @@
     <title>Share2Teach</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body onload="initrest()">
+  <body onload="initrest(); popModTable()">
     <header>
       <nav>
         <ul>
@@ -20,12 +20,62 @@
       </nav>
     </header>
     <main>
+      <div class="popup" id="popup">
+        <div class="popup-content">
+          <form>
+            <p>Please moderate the file:</p>
+            <br /><br />
+
+            <!-- True/False Radio Buttons -->
+            <input
+              type="radio"
+              id="true"
+              name="moderationChoice"
+              value="true"
+            />
+            <label for="true">True</label><br /><br />
+
+            <input
+              type="radio"
+              id="false"
+              name="moderationChoice"
+              value="false"
+            />
+            <label for="false">False</label><br /><br />
+
+            <!-- Comments Text Area -->
+            <label for="comments">Comments:</label>
+            <input type="text" id="moderate-comments" /><br /><br />
+
+            <!-- Action Buttons -->
+            <button type="button" onclick="submitModeration()">Submit</button>
+            <button type="button" onclick="closePopup()">Cancel</button>
+          </form>
+        </div>
+      </div>
+
       <div class="regbox">
         <div class="subbox">
           <form>
             <h1>Unmoderated Documents:</h1>
             <br /><br />
-            <div id="unmoderated_document-list"></div>
+            <table class="datagrid" id="fileTableModerate">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Size</th>
+                  <th>Subject</th>
+                  <th>Grade</th>
+                  <th>Validation</th>
+                  <th>Comments</th>
+                  <th>Validate</th>
+                  <th>Delete</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Sample data -->
+              </tbody>
+            </table>
           </form>
         </div>
       </div>
