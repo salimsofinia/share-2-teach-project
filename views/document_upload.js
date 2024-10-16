@@ -285,9 +285,9 @@ async function searchDocuments() {
       fileId
     ); // Pass index for unique ID
     // Set the innerHTML for the downloadCell with correct syntax
-    downloadCell.innerHTML = `<button type="button" id="${fileId}">Download</button>`;
+    downloadCell.innerHTML = `<button type="button" id="${fileId}" style="width:100%">Download</button>`;
 
-    reportCell.innerHTML = `<button type="button" id="${fileId}-report">Report</button>`;
+    reportCell.innerHTML = `<button type="button" id="${fileId}-report"style="width:100%">Report</button>`;
 
     // Retrieve the button element after it has been inserted into the DOM
     const buttonDownload = document.getElementById(fileId.toString());
