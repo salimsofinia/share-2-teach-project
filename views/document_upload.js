@@ -544,6 +544,33 @@ async function modifyButtonClick(event, userID, currentRole) {
     overlay.remove();
   });
 }
+///////////////////////////////////////////////////////////////////////////////
+// Delete Button Click Handler
+async function deleteButtonClick(event, userID) {
+  if (!confirm(`Are you sure you want to delete user with ID ${userID}?`)) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/user/${userID}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token') || document.cookie.split('=')[1]}`
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message);
+    }
+
+    const data = await response.json();
+    alert(`User with ID ${userID} deleted successfully.`);
+    await popUserTable();
+  } catch (error) {
+    alert(`Error deleting user: ${error.message}`);
+  }
+}
 ////////////////////////////////////////////////////////////////////////////////
 // Populate User Table
 async function popUserTable() {
@@ -569,6 +596,7 @@ async function popUserTable() {
     const emailCell = row.insertCell(2);
     const roleCell = row.insertCell(3);
     const modifyCell = row.insertCell(4);
+    const DelCell = row.insertCell(5);
 
     const userID = user._id;
 
@@ -577,19 +605,30 @@ async function popUserTable() {
     emailCell.textContent = user.email;
     roleCell.textContent = user.role;
 
-    modifyCell.innerHTML = `<button type="button" id="${userID}">Modify</button>`;
-    const button = document.getElementById(userID.toString());
+    modifyCell.innerHTML = `<button type="button" id="modify-${userID}">Modify</button>`;
+      const modifyButton = document.getElementById(`modify-${userID.toString()}`);
 
-    if (button) {
-      button.addEventListener("click", (event) => {
-        modifyButtonClick(event, userID, user.role); 
-      });
-    } else {
-      console.error(`Button with ID ${userID} not found`);
-    }
+      if (modifyButton) {
+        modifyButton.addEventListener("click", (event) => {
+          modifyButtonClick(event, userID, user.role); 
+        });
+      } else {
+        console.error(`Button with ID modify-${userID} not found`);
+      }
 
-    console.log(user._id);
-  });
+      DelCell.innerHTML = `<button type="button" id="delete-${user._id}">Delete</button>`;
+      const deleteButton = document.getElementById(`delete-${user._id.toString()}`);
+
+      if (deleteButton) {
+        deleteButton.addEventListener("click", (event) => {
+          deleteButtonClick(event, user._id); 
+        });
+      } else {
+        console.error(`Button with ID delete-${user._id} not found`);
+      }
+
+      console.log(user._id);
+    });
 }
 ////////////////////////////////////////////////////////////////////////////////
 async function popFileTable() {
