@@ -27,6 +27,7 @@
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
     "redis": "^4.7.0",
+    "share-2-teach-project": "file:",
     "winston": "^3.15.0"
   },
   "devDependencies": {
