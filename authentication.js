@@ -935,7 +935,7 @@ app.post("/api/file/report/:id", async (req, res) => {
       });
       useraction.save();
       res
-        .status(500)
+        .status(200)
         .json({ message: "Report submitted for file: ", fileName });
     } else {
     }
