@@ -33,16 +33,84 @@
                     <input type="text" id="Credentials" name="Credentials"><br><br>
                     <label for="password">Password:</label>
                     <input type="text" id="password" name="password"><br><br>
-                    <input type="checkbox" id="checkbox-id" name="checkbox-name" value="checkbox-value">
-                    <label for="checkbox-id">Admin</label><br><br>
-                    <input type="checkbox" id="checkbox-id" name="checkbox-name" value="checkbox-value">
-                    <label for="checkbox-id">Moderator</label><br><br>
-                    <input type="checkbox" id="checkbox-id" name="checkbox-name" value="checkbox-value">
-                    <label for="checkbox-id">Educator</label><br><br>
+                    <input type="checkbox" id="admin-checkbox">
+                    <label for="admin-checkbox">Admin</label><br><br>
+                    <input type="checkbox" id="moderator-checkbox">
+                    <label for="moderator-checkbox">Moderator</label><br><br>
+                    <input type="checkbox" id="educator-checkbox">
+                    <label for="educator-checkbox">Educator</label><br><br>
                     <div class="buttons">
-                <button type="button">Create Account</button>
-                <button type="button" onclick="location.href='landing.html'">Cancel</button>
-            </div>
+                        <button type="button" id="create-button">Create Account</button>
+                        <button type="button" onclick="location.href='landing.html'">Cancel</button>
+                    </div>
+                    <script>
+                        // Wait for the DOM to load
+                        document.addEventListener('DOMContentLoaded', () => {
+                            // Function to create user
+                            async function createUser() {
+                                // Get form data
+                                const firstname = document.getElementById('name').value;
+                                const lastname = document.getElementById('last-name').value;
+                                const email = document.getElementById('email').value;
+                                const affiliation = document.getElementById('Affiliation').value;
+                                const credentials = document.getElementById('Credentials').value;
+                                const password = document.getElementById('password').value;
+                
+                                // Get selected role
+                                let role;
+                                const adminCheckbox = document.getElementById('admin-checkbox');
+                                const moderatorCheckbox = document.getElementById('moderator-checkbox');
+                                const educatorCheckbox = document.getElementById('educator-checkbox');
+                
+                                if (adminCheckbox.checked) {
+                                    role = 'Admin';
+                                } else if (moderatorCheckbox.checked) {
+                                    role = 'Moderator';
+                                } else if (educatorCheckbox.checked) {
+                                    role = 'Educator';
+                                } else {
+                                    alert('Please select a role.');
+                                    return;
+                                }
+                
+                                // Create user object
+                                const user = {
+                                    firstname,
+                                    lastname,
+                                    email,
+                                    affiliation,
+                                    credentials,
+                                    password,
+                                    role,
+                                };
+                
+                                // Send POST request to API endpoint
+                                try {
+                                    const response = await fetch('/api/user', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                        },
+                                        body: JSON.stringify(user),
+                                    });
+                
+                                    const data = await response.json();
+                
+                                    if (response.ok) {
+                                        alert('User created successfully.');
+                                        location.href = 'landing.html';
+                                    } else {
+                                        alert(data.message);
+                                    }
+                                } catch (error) {
+                                    console.error(error);
+                                }
+                            }
+                
+                            // Add event listener to create account button
+                            document.getElementById('create-button').addEventListener('click', createUser);
+                        });
+                    </script>
                 </form>
             </div>
         </div>
