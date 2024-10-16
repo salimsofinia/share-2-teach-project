@@ -214,7 +214,6 @@ footer {
   align-items: center;
   margin-bottom: 50px;
   transition: all 0.3s ease;
- 
 }
 
 .box:hover {
@@ -228,21 +227,21 @@ footer {
   border: 1px solid #333;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  
+
   /* Vertically flexible, with minimum height */
   min-height: 100px;
   height: auto; /* Expand to fit content */
   max-height: calc(100vh - 200px); /* Leave space for header & footer */
-  
+
   display: flex;
   flex-direction: column;
   align-items: center;
-  
+
   /* Adjust margins to maintain spacing */
   margin: 20px auto 20px;
-  
+
   transition: all 0.3s ease;
-  
+
   /* Handle overflow */
   overflow-y: auto;
 }
@@ -400,6 +399,13 @@ button:hover {
 }
 
 .logged-in-as-admin .hide-when-not-admin {
+  display: block;
+}
+.hide-when-not-moderator {
+  display: none;
+}
+
+.logged-in-as-moderator .hide-when-not-moderator {
   display: block;
 }
 
