@@ -156,28 +156,38 @@ app.post("/api/login", async (req, res) => {
 
 //new user is created and saved in db
 app.post("/register", async (req, res) => {
-  const { firstname, lastname, email, affiliation, credential, password } =
-    req.body;
-  const user = new User({
-    firstname,
-    lastname,
-    email,
-    affiliation,
-    credential,
-    password,
-  });
-  await user.save();
-  //when user has been created then go back to login page
-  res.redirect("/login");
+  try {
+    const { firstname, lastname, email, affiliation, credential, password } =
+      req.body;
+    const user = new User({
+      firstname,
+      lastname,
+      email,
+      affiliation,
+      credential,
+      password,
+    });
+    await user.save();
+    //when user has been created then go back to login page
+    res.redirect("/login");
+  } catch (error) {
+    console.error("Error registering new user:", error);
+    res.status(500).send("An error occurred during registration.");
+  }
 });
 
 //when user logs out all cookies are destroyed, this includes the access token
 app.post("/logout", (req, res) => {
-  Object.keys(req.cookies).forEach((cookieName) => {
-    res.clearCookie(cookieName);
-  });
-  console.log("All cookies destroyed");
-  res.redirect("/login");
+  try {
+    Object.keys(req.cookies).forEach((cookieName) => {
+      res.clearCookie(cookieName);
+    });
+    console.log("All cookies destroyed");
+    res.redirect("/login");
+  } catch (error) {
+    console.error("Error during logout:", error);
+    res.status(500).send("Failed to log out.");
+  }
 });
 
 app.listen(3000, () => {
