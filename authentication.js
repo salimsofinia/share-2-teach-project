@@ -7,7 +7,7 @@ const session = require("express-session");
 
 mongoose
   .connect(
-    "mongodb+srv://salimsofinia:Salim123@backenddb.4f0qd.mongodb.net/Share2Teach?retryWrites=true&w=majority&appName=BackendDB",
+    "",
     {
       useNewUrlParser: true,
       useUnifiedTopology: true,
